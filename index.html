@@ -177,7 +177,7 @@ main{max-width:640px;margin:0 auto;padding:10px 10px calc(env(safe-area-inset-bo
 'use strict';
 /* 受け口（Apps Script）の住所。手元の試しのときだけ /api（試しの受け口.py）に向ける */
 var LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-var API = LOCAL ? '/api' : 'APPS_SCRIPT_URL';
+var API = LOCAL ? '/api' : 'https://script.google.com/macros/s/AKfycbx6S-akWD-M8DDkDkKfLrq7f2HOj6OtGeJLvUTCI8p9mytdRkn5Qw-hNtsU3E-XjYhzbQ/exec';
 var P = 'nerainote_';            /* 同じ住所にほかのアプリもいるので、控えの名前はこれで始める */
 var IMG_CACHE = 'nerainote-img-v1';
 
