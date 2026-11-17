@@ -552,7 +552,13 @@ $('cSend').addEventListener('click', function () {
 /* ---------- はじめ ---------- */
 $('fab').classList.toggle('hide', !S.w);
 if (S.key) { render(); refresh(false); } else showLock('');
-if ('serviceWorker' in navigator && !LOCAL) navigator.serviceWorker.register('sw.js').catch(function () {});
+if ('serviceWorker' in navigator && !LOCAL) {
+  navigator.serviceWorker.register('sw.js').catch(function () {});
+  /* 新しい版が届いたら、書いている途中でなければ開き直す */
+  navigator.serviceWorker.addEventListener('message', function (e) {
+    if (e.data === 'nerainote-new' && $('compose').classList.contains('hide')) location.reload();
+  });
+}
 })();
 </script>
 </body>

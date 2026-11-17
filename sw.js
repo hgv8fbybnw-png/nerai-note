@@ -4,8 +4,9 @@
  *   画像の控え（nerainote-img-）はページが入れるもので、ここでは消さない。
  * 受け口（script.google.com）への行き来には手を出さない。
  */
-var BUILD = 'dev';
-var CACHE = 'nerainote-app-v1';
+/* 版2：裏で取った画面が控えとちがったら、開いているページに知らせる（ページが開き直して新しい版になる） */
+var BUILD = '2';
+var CACHE = 'nerainote-app-v2';
 var PAGE = new URL('./', self.registration.scope).href;
 var STATIC = ['manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 
@@ -28,6 +29,10 @@ self.addEventListener('activate', function (e) {
   );
 });
 
+function tell() {
+  return self.clients.matchAll({ type: 'window' }).then(function (cs) { cs.forEach(function (w) { w.postMessage('nerainote-new'); }); });
+}
+
 self.addEventListener('fetch', function (e) {
   var req = e.request;
   if (req.method !== 'GET') return;
@@ -38,9 +43,15 @@ self.addEventListener('fetch', function (e) {
   e.respondWith(
     caches.open(CACHE).then(function (c) {
       return c.match(key).then(function (hit) {
+        var old = hit && key === PAGE ? hit.clone() : null;
         var net = fetch(new Request(key, { cache: 'reload' })).then(function (res) {
-          if (res && res.ok) c.put(key, res.clone());
-          return res;
+          if (!res || !res.ok) return res;
+          var copy = res.clone();
+          if (!old) { c.put(key, copy); return res; }
+          return Promise.all([old.text(), copy.clone().text()]).then(function (t) {
+            if (t[0] === t[1]) return res;
+            return c.put(key, copy).then(tell).then(function () { return res; });
+          });
         }).catch(function () { return hit; });
         if (hit) { e.waitUntil(net); return hit; }
         return net;
