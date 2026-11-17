@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>狙い目ノート</title>
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="狙い目ノート">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+/* 狙い目ノート（2026-11-17）：グループのノートを写した、見るためのページ。並びはノートと同じ（日付→画像→文→もっと見る） */
+:root{
+  --bg:#eef0f3; --card:#fff; --line:#e3e5e9; --ink:#1f2328; --sub:#8b9099; --link:#3d6ee0;
+  --head:#fff; --chip:#f2f3f5; --dark:#000;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  -webkit-text-size-adjust:100%;}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.hide{display:none!important}
+
+/* 上の帯 */
+header{position:sticky;top:0;z-index:5;background:var(--head);border-bottom:1px solid var(--line);
+  padding:calc(env(safe-area-inset-top) + 8px) 12px 8px}
+.bar{display:flex;align-items:center;gap:8px;max-width:640px;margin:0 auto}
+.bar h1{font-size:17px;margin:0;flex:1;font-weight:700}
+.icon-btn{width:36px;height:36px;border-radius:18px;display:grid;place-items:center;color:#555}
+.icon-btn:active{background:var(--chip)}
+.search{max-width:640px;margin:8px auto 0;position:relative}
+.search input{width:100%;border:0;background:var(--chip);border-radius:10px;padding:9px 34px 9px 34px;font-size:16px;color:var(--ink);outline:none}
+.search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--sub)}
+.search .clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:13px;color:var(--sub);font-size:18px}
+.count{max-width:640px;margin:6px auto 0;font-size:12px;color:var(--sub)}
+
+/* 投稿 */
+main{max-width:640px;margin:0 auto;padding:10px 10px calc(env(safe-area-inset-bottom) + 90px)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;margin:0 0 10px;overflow:hidden}
+.meta{display:flex;align-items:center;padding:12px 14px 10px;min-height:44px}
+.meta time{font-size:12px;color:var(--sub);flex:1}
+.dots{width:32px;height:28px;border-radius:6px;color:var(--sub);font-size:18px;line-height:1}
+.dots:active{background:var(--chip)}
+.ph{display:grid;gap:2px;background:var(--card)}
+.ph .t{position:relative;overflow:hidden;background:#e9ebee;cursor:zoom-in}
+.ph .t img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity .2s}
+.ph .t img.on{opacity:1}
+.ph .t .more-n{position:absolute;inset:0;background:rgba(0,0,0,.45);color:#fff;font-size:24px;display:grid;place-items:center}
+.ph.n1 .t{aspect-ratio:var(--ar,1.6);max-height:78vh}
+.ph.n2{grid-template-columns:1fr 1fr}
+.ph.n2 .t{aspect-ratio:1}
+.ph.nm{grid-template-columns:repeat(3,1fr)}
+.ph.nm .t{aspect-ratio:1}
+.ph.nm .t:first-child{grid-column:1/-1;aspect-ratio:1.6}
+.tx{padding:12px 14px 4px;font-size:15px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.tx.clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:7;overflow:hidden}
+.tx a{color:var(--link);word-break:break-all}
+.more{display:block;padding:0 14px 12px;font-size:14px;color:var(--link)}
+.foot{height:10px}
+.empty{text-align:center;color:var(--sub);padding:48px 0;font-size:14px}
+
+/* 書くボタン */
+.fab{position:fixed;right:18px;bottom:calc(env(safe-area-inset-bottom) + 18px);width:56px;height:56px;border-radius:28px;
+  background:#2b3a55;color:#fff;font-size:30px;line-height:56px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:6}
+
+/* 画像を大きく見る */
+.viewer{position:fixed;inset:0;background:var(--dark);z-index:20;display:flex;flex-direction:column}
+.vtop{display:flex;align-items:center;justify-content:space-between;color:#fff;padding:calc(env(safe-area-inset-top) + 6px) 8px 6px;font-size:14px}
+.vtop button{color:#fff;width:40px;height:40px;font-size:26px}
+.slides{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.slide{flex:0 0 100%;height:100%;overflow-y:auto;scroll-snap-align:start;display:flex;flex-direction:column}
+.slide img{width:100%;height:auto;margin:auto 0;display:block}
+.arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;color:#fff;font-size:30px;background:rgba(255,255,255,.08)}
+.arrow.l{left:0}.arrow.r{right:0}
+@media (hover:none){.arrow{display:none}}
+
+/* 合言葉・書く・メニューの画面 */
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.panel{background:#fff;width:100%;max-width:640px;border-radius:14px 14px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 18px)}
+.panel h2{font-size:17px;margin:0 0 6px}
+.panel p{font-size:13px;color:var(--sub);margin:0 0 12px;line-height:1.5}
+.field{width:100%;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:12px;outline:none}
+.field:focus{border-color:#9db3e8}
+.btn{display:block;width:100%;margin-top:12px;padding:13px;border-radius:10px;background:#2b3a55;color:#fff;font-size:16px;font-weight:600}
+.btn.sub{background:var(--chip);color:var(--ink);font-weight:500}
+.btn:disabled{opacity:.5}
+.msg{color:#c4372f;font-size:13px;min-height:18px;margin-top:8px}
+.lock{position:fixed;inset:0;background:var(--bg);z-index:40;display:flex;align-items:center;justify-content:center;padding:24px}
+.lock .panel{border-radius:14px;max-width:400px}
+.menu .btn{margin-top:8px}
+
+.compose{position:fixed;inset:0;background:#fff;z-index:35;display:flex;flex-direction:column}
+.ctop{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;border-bottom:1px solid var(--line)}
+.ctop b{font-size:16px}
+.ctop button{padding:8px 10px;font-size:15px}
+.ctop .send{color:#fff;background:#2b3a55;border-radius:8px;font-weight:600}
+.cbody{flex:1;overflow-y:auto;padding:12px}
+.cbody textarea{width:100%;min-height:40vh;border:0;outline:none;font-size:16px;line-height:1.6;resize:none;font-family:inherit}
+.strip{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.strip .p{position:relative;width:88px;height:88px;border-radius:6px;overflow:hidden;background:#eee}
+.strip .p img{width:100%;height:100%;object-fit:cover}
+.strip .p button{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:12px;background:rgba(0,0,0,.6);color:#fff;font-size:15px;line-height:24px}
+.addimg{width:88px;height:88px;border-radius:6px;border:1px dashed #b9bec7;color:var(--sub);font-size:12px;display:grid;place-items:center;text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:rgba(30,30,30,.9);color:#fff;
+  font-size:13px;padding:9px 14px;border-radius:18px;z-index:50;max-width:86vw;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>狙い目ノート</h1>
+    <button class="icon-btn" id="menuBtn" aria-label="メニュー">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+    </button>
+  </div>
+  <div class="search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <input id="q" type="search" placeholder="ノートを検索" autocomplete="off" enterkeyhint="search">
+    <button class="clear hide" id="qClear" aria-label="消す">×</button>
+  </div>
+  <div class="count hide" id="count"></div>
+</header>
+
+<main id="list"></main>
+<button class="fab hide" id="fab" aria-label="書く">＋</button>
+
+<div class="viewer hide" id="viewer">
+  <div class="vtop"><button id="vClose" aria-label="閉じる">×</button><span id="vNum"></span><span style="width:40px"></span></div>
+  <div class="slides" id="slides"></div>
+  <button class="arrow l" id="vPrev" aria-label="前">‹</button>
+  <button class="arrow r" id="vNext" aria-label="次">›</button>
+</div>
+
+<div class="lock hide" id="lock">
+  <form class="panel" id="lockForm">
+    <h2>合言葉を入れてください</h2>
+    <p>グループで伝えられた合言葉です。一度入れると、このスマホでは次から入れなくて大丈夫です。</p>
+    <input class="field" id="lockKey" type="password" autocomplete="current-password" placeholder="合言葉">
+    <div class="msg" id="lockMsg"></div>
+    <button class="btn" id="lockGo" type="submit">開く</button>
+  </form>
+</div>
+
+<div class="sheet hide" id="menu">
+  <div class="panel menu">
+    <h2>メニュー</h2>
+    <p id="menuInfo"></p>
+    <button class="btn sub" id="mReload">最新にする</button>
+    <button class="btn sub" id="mKey">合言葉を入れ直す</button>
+    <button class="btn sub" id="mClose">閉じる</button>
+  </div>
+</div>
+
+<div class="sheet hide" id="pmenu">
+  <div class="panel menu">
+    <h2>この投稿</h2>
+    <button class="btn sub" id="pEdit">直す</button>
+    <button class="btn sub" id="pDel" style="color:#c4372f">消す</button>
+    <button class="btn sub" id="pClose">やめる</button>
+  </div>
+</div>
+
+<div class="compose hide" id="compose">
+  <div class="ctop"><button id="cCancel">やめる</button><b id="cTitle">ノートを書く</b><button class="send" id="cSend">投稿</button></div>
+  <div class="cbody">
+    <textarea id="cText" placeholder="ここに書く"></textarea>
+    <div class="strip" id="cStrip"></div>
+    <input id="cFile" type="file" accept="image/*" multiple class="hide">
+  </div>
+</div>
+
+<div class="toast hide" id="toast"></div>
+
+<script>
+(function () {
+'use strict';
+/* 受け口（Apps Script）の住所。手元の試しのときだけ /api（試しの受け口.py）に向ける */
+var LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+var API = LOCAL ? '/api' : 'APPS_SCRIPT_URL';
+var P = 'nerainote_';            /* 同じ住所にほかのアプリもいるので、控えの名前はこれで始める */
+var IMG_CACHE = 'nerainote-img-v1';
+
+function $(id) { return document.getElementById(id); }
+function ls(k, v) {
+  try {
+    if (v === undefined) return localStorage.getItem(P + k);
+    if (v === null) localStorage.removeItem(P + k); else localStorage.setItem(P + k, v);
+  } catch (e) { return null; }
+}
+var S = { key: ls('key') || '', w: ls('w') === '1', v: ls('v') || '', posts: [], q: '' };
+try { S.posts = JSON.parse(ls('posts') || '[]'); } catch (e) { S.posts = []; }
+
+/* ---------- 受け口とのやりとり ---------- */
+function call(q) {
+  return fetch(API, { method: 'POST', body: JSON.stringify(q), redirect: 'follow' })
+    .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); });
+}
+function toast(t, ms) {
+  var el = $('toast'); el.textContent = t; el.classList.remove('hide');
+  clearTimeout(toast.t); toast.t = setTimeout(function () { el.classList.add('hide'); }, ms || 2200);
+}
+
+function refresh(force) {
+  if (!S.key) { showLock(''); return Promise.resolve(); }
+  return call({ a: 'list', k: S.key, v: force ? '' : S.v }).then(function (r) {
+    if (!r.ok) {
+      if (r.bad) { S.key = ''; ls('key', null); showLock('合言葉が変わったようです。入れ直してください。'); }
+      else toast(r.msg || 'うまくいきませんでした');
+      return;
+    }
+    S.w = !!r.w; ls('w', S.w ? '1' : '0'); $('fab').classList.toggle('hide', !S.w);
+    if (r.same) { if (force) toast('最新です'); return; }
+    S.posts = r.posts || []; S.v = r.v || '';
+    try { ls('posts', JSON.stringify(S.posts)); ls('v', S.v); } catch (e) {}
+    render();
+    if (force) toast('最新にしました');
+  }).catch(function () {
+    toast(S.posts.length ? '電波がないので、スマホの中の控えを出しています' : 'つながりませんでした。電波のある所でもう一度開いてください', 3200);
+  });
+}
+
+/* ---------- 合言葉 ---------- */
+function showLock(msg) {
+  $('lock').classList.remove('hide'); $('lockMsg').textContent = msg || '';
+  setTimeout(function () { $('lockKey').focus(); }, 50);
+}
+$('lockForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var k = $('lockKey').value.trim();
+  if (!k) return;
+  $('lockGo').disabled = true; $('lockMsg').textContent = '';
+  call({ a: 'list', k: k }).then(function (r) {
+    if (!r.ok) { $('lockMsg').textContent = r.msg || '合言葉がちがいます'; return; }
+    S.key = k; ls('key', k); S.w = !!r.w; ls('w', S.w ? '1' : '0');
+    S.posts = r.posts || []; S.v = r.v || '';
+    try { ls('posts', JSON.stringify(S.posts)); ls('v', S.v); } catch (e2) {}
+    $('lockKey').value = ''; $('lock').classList.add('hide');
+    $('fab').classList.toggle('hide', !S.w);
+    render();
+  }).catch(function () {
+    $('lockMsg').textContent = 'つながりませんでした。電波を確かめてください';
+  }).then(function () { $('lockGo').disabled = false; });
+});
+
+/* ---------- 見た目のための小さな道具 ---------- */
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function linkify(s) {
+  return esc(s).replace(/https?:\/\/[^\s<>"']+/g, function (u) { return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + '</a>'; });
+}
+function fmt(at) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(at || '');
+  if (!m) return '';
+  var h = +m[4], ap = h < 12 ? '午前' : '午後', hh = h < 12 ? h : (h === 12 ? 12 : h - 12);
+  var y = +m[1] === new Date().getFullYear() ? '' : m[1] + '.';
+  return y + (+m[2]) + '.' + (+m[3]) + ' ' + ap + ' ' + hh + ':' + m[5];
+}
+function norm(s) {
+  return String(s || '').normalize('NFKC').toLowerCase()
+    .replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0x60); })
+    .replace(/\s+/g, '');
+}
+
+/* ---------- 一覧 ---------- */
+function render() {
+  var list = $('list'), q = norm(S.q), shown = 0, frag = document.createDocumentFragment();
+  list.textContent = '';
+  S.posts.forEach(function (p) {
+    if (q) {
+      if (!p._n) p._n = norm(p.text);
+      if (p._n.indexOf(q) < 0) return;
+    }
+    frag.appendChild(card(p)); shown++;
+  });
+  if (!shown) {
+    var e = document.createElement('div'); e.className = 'empty';
+    e.textContent = q ? '見つかりませんでした' : (S.key ? 'まだノートがありません' : '');
+    frag.appendChild(e);
+  }
+  list.appendChild(frag);
+  $('count').classList.toggle('hide', !q);
+  $('count').textContent = shown + '件';
+  requestAnimationFrame(function () {
+    list.querySelectorAll('.tx.clamp').forEach(function (t) {
+      if (t.scrollHeight <= t.clientHeight + 2) { t.classList.remove('clamp'); var b = t.nextElementSibling; if (b && b.classList.contains('more')) b.remove(); }
+    });
+    watchImages();
+  });
+}
+
+function card(p) {
+  var a = document.createElement('article'); a.className = 'card'; a.dataset.id = p.id;
+  var h = '<div class="meta"><time>' + esc(fmt(p.at)) + '</time>' + (S.w ? '<button class="dots" data-act="menu" aria-label="この投稿のメニュー">⋯</button>' : '') + '</div>';
+  var im = p.imgs || [];
+  if (im.length) {
+    var cls = im.length === 1 ? 'n1' : im.length === 2 ? 'n2' : 'nm', show = im.length > 4 ? 4 : im.length;
+    var style = im.length === 1 && im[0].w && im[0].h ? ' style="--ar:' + Math.max(im[0].w / im[0].h, 0.56).toFixed(3) + '"' : '';
+    h += '<div class="ph ' + cls + '">';
+    for (var i = 0; i < show; i++) {
+      h += '<div class="t" data-act="view" data-i="' + i + '"' + (i === 0 ? style : '') + '><img data-img="' + esc(im[i].id) + '" alt="">' +
+        (i === show - 1 && im.length > show ? '<span class="more-n">+' + (im.length - show) + '</span>' : '') + '</div>';
+    }
+    h += '</div>';
+  }
+  if (p.text) h += '<div class="tx clamp">' + linkify(p.text) + '</div><button class="more" data-act="more">…もっと見る</button>';
+  h += '<div class="foot"></div>';
+  a.innerHTML = h;
+  return a;
+}
+
+$('list').addEventListener('click', function (e) {
+  var t = e.target.closest('[data-act]');
+  if (!t) return;
+  var c = t.closest('.card'), p = find(c && c.dataset.id);
+  if (!p) return;
+  var act = t.dataset.act;
+  if (act === 'more') { var tx = t.previousElementSibling; tx.classList.remove('clamp'); t.remove(); }
+  else if (act === 'view') openViewer(p, +t.dataset.i);
+  else if (act === 'menu') postMenu(p);
+});
+function find(id) { for (var i = 0; i < S.posts.length; i++) if (S.posts[i].id === id) return S.posts[i]; return null; }
+
+/* ---------- 検索 ---------- */
+var qTimer;
+$('q').addEventListener('input', function () {
+  clearTimeout(qTimer);
+  qTimer = setTimeout(function () { S.q = $('q').value; $('qClear').classList.toggle('hide', !S.q); render(); window.scrollTo(0, 0); }, 150);
+});
+$('qClear').addEventListener('click', function () { $('q').value = ''; S.q = ''; $('qClear').classList.add('hide'); render(); });
+
+/* ---------- 画像（見えそうになったら取りに行き、スマホの中に控える） ---------- */
+var URLS = {}, WAIT = {}, QUEUE = [], RUNNING = 0, io = null;
+function cacheKey(id) { return new Request(new URL('./_img/' + encodeURIComponent(id), location.href).href); }
+function fromCache(id) {
+  if (!('caches' in window)) return Promise.resolve(null);
+  return caches.open(IMG_CACHE).then(function (c) { return c.match(cacheKey(id)); })
+    .then(function (r) { return r ? r.blob() : null; }).catch(function () { return null; });
+}
+function toCache(id, blob) {
+  if (!('caches' in window)) return;
+  caches.open(IMG_CACHE).then(function (c) { return c.put(cacheKey(id), new Response(blob, { headers: { 'Content-Type': blob.type } })); }).catch(function () {});
+}
+function b64blob(d, m) {
+  var bin = atob(d), n = bin.length, u = new Uint8Array(n);
+  for (var i = 0; i < n; i++) u[i] = bin.charCodeAt(i);
+  return new Blob([u], { type: m });
+}
+function getImg(id) {
+  if (URLS[id]) return Promise.resolve(URLS[id]);
+  if (WAIT[id]) return WAIT[id].p;
+  var w = {}; w.p = new Promise(function (res) { w.res = res; }); WAIT[id] = w;
+  fromCache(id).then(function (blob) {
+    if (blob) { URLS[id] = URL.createObjectURL(blob); delete WAIT[id]; w.res(URLS[id]); }
+    else { QUEUE.push(id); pump(); }
+  });
+  return w.p;
+}
+function pump() {
+  while (RUNNING < 2 && QUEUE.length) {
+    var ids = QUEUE.splice(0, 4); RUNNING++;
+    call({ a: 'imgs', k: S.key, ids: ids }).then(function (ids) {
+      return function (r) {
+        ids.forEach(function (id) {
+          var it = r && r.ok && r.imgs && r.imgs[id], w = WAIT[id];
+          if (!w) return;
+          if (it) { var b = b64blob(it.d, it.m); toCache(id, b); URLS[id] = URL.createObjectURL(b); w.res(URLS[id]); }
+          else w.res('');
+          delete WAIT[id];
+        });
+      };
+    }(ids)).catch(function (ids) {
+      return function () { ids.forEach(function (id) { var w = WAIT[id]; if (w) { w.res(''); delete WAIT[id]; } }); };
+    }(ids)).then(function () { RUNNING--; pump(); });
+  }
+}
+function showImg(el) {
+  if (el.dataset.done) return;
+  el.dataset.done = '1';
+  getImg(el.dataset.img).then(function (u) { if (u) { el.onload = function () { el.classList.add('on'); }; el.src = u; } else el.dataset.done = ''; });
+}
+function watchImages() {
+  var imgs = document.querySelectorAll('img[data-img]:not([data-done])');
+  if (!('IntersectionObserver' in window)) { imgs.forEach(showImg); return; }
+  if (!io) io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { io.unobserve(e.target); showImg(e.target); } });
+  }, { rootMargin: '800px 0px' });
+  imgs.forEach(function (el) { io.observe(el); });
+}
+
+/* ---------- 画像を大きく見る ---------- */
+var V = { p: null };
+function openViewer(p, i) {
+  V.p = p;
+  var s = $('slides'); s.textContent = '';
+  p.imgs.forEach(function (im) {
+    var d = document.createElement('div'); d.className = 'slide';
+    var img = document.createElement('img'); img.alt = '';
+    getImg(im.id).then(function (u) { if (u) img.src = u; });
+    d.appendChild(img); s.appendChild(d);
+  });
+  $('viewer').classList.remove('hide');
+  document.body.style.overflow = 'hidden';
+  history.pushState({ v: 1 }, '');
+  requestAnimationFrame(function () { s.scrollLeft = i * s.clientWidth; num(); });
+}
+function num() {
+  var s = $('slides'), n = V.p ? V.p.imgs.length : 0, i = Math.round(s.scrollLeft / Math.max(s.clientWidth, 1));
+  $('vNum').textContent = n > 1 ? (i + 1) + ' / ' + n : '';
+  $('vPrev').classList.toggle('hide', n < 2 || i === 0);
+  $('vNext').classList.toggle('hide', n < 2 || i === n - 1);
+}
+function closeViewer() { $('viewer').classList.add('hide'); document.body.style.overflow = ''; V.p = null; }
+$('slides').addEventListener('scroll', function () { clearTimeout(num.t); num.t = setTimeout(num, 60); });
+$('vClose').addEventListener('click', function () { history.back(); });
+$('vPrev').addEventListener('click', function () { var s = $('slides'); s.scrollBy({ left: -s.clientWidth, behavior: 'smooth' }); });
+$('vNext').addEventListener('click', function () { var s = $('slides'); s.scrollBy({ left: s.clientWidth, behavior: 'smooth' }); });
+window.addEventListener('popstate', function () {
+  if (!$('viewer').classList.contains('hide')) closeViewer();
+  else if (!$('compose').classList.contains('hide')) closeCompose();
+});
+document.addEventListener('keydown', function (e) {
+  if ($('viewer').classList.contains('hide')) return;
+  if (e.key === 'Escape') history.back();
+  if (e.key === 'ArrowRight') $('vNext').click();
+  if (e.key === 'ArrowLeft') $('vPrev').click();
+});
+
+/* ---------- メニュー ---------- */
+$('menuBtn').addEventListener('click', function () {
+  $('menuInfo').textContent = (S.w ? '書く人として開いています。' : '') + 'ノート ' + S.posts.length + '件';
+  $('menu').classList.remove('hide');
+});
+$('mClose').addEventListener('click', function () { $('menu').classList.add('hide'); });
+$('menu').addEventListener('click', function (e) { if (e.target === $('menu')) $('menu').classList.add('hide'); });
+$('mReload').addEventListener('click', function () { $('menu').classList.add('hide'); refresh(true); });
+$('mKey').addEventListener('click', function () { $('menu').classList.add('hide'); showLock(''); });
+
+/* ---------- 書く・直す・消す（書く合言葉の人だけ） ---------- */
+var C = { id: '', imgs: [] };
+var PM = null;
+function postMenu(p) { PM = p; $('pmenu').classList.remove('hide'); }
+$('pClose').addEventListener('click', function () { $('pmenu').classList.add('hide'); });
+$('pmenu').addEventListener('click', function (e) { if (e.target === $('pmenu')) $('pmenu').classList.add('hide'); });
+$('pEdit').addEventListener('click', function () { $('pmenu').classList.add('hide'); if (PM) openCompose(PM); });
+$('pDel').addEventListener('click', function () {
+  $('pmenu').classList.add('hide');
+  if (!PM || !window.confirm('この投稿を消します。よろしいですか？')) return;
+  call({ a: 'del', k: S.key, id: PM.id }).then(function (r) { toast(r.ok ? '消しました' : (r.msg || 'うまくいきませんでした')); if (r.ok) refresh(true); })
+    .catch(function () { toast('つながりませんでした'); });
+});
+$('fab').addEventListener('click', function () { openCompose(null); });
+function openCompose(p) {
+  C.id = p ? p.id : '';
+  C.imgs = p ? p.imgs.map(function (im) { return { id: im.id, w: im.w, h: im.h }; }) : [];
+  $('cTitle').textContent = p ? 'ノートを直す' : 'ノートを書く';
+  $('cSend').textContent = p ? '直す' : '投稿';
+  $('cText').value = p ? p.text : '';
+  strip();
+  $('compose').classList.remove('hide');
+  history.pushState({ c: 1 }, '');
+}
+function closeCompose() { $('compose').classList.add('hide'); }
+$('cCancel').addEventListener('click', function () { history.back(); });
+function strip() {
+  var s = $('cStrip'); s.textContent = '';
+  C.imgs.forEach(function (it, i) {
+    var d = document.createElement('div'); d.className = 'p';
+    var img = document.createElement('img');
+    if (it.url) img.src = it.url; else getImg(it.id).then(function (u) { if (u) img.src = u; });
+    var x = document.createElement('button'); x.textContent = '×'; x.setAttribute('aria-label', 'この画像を外す');
+    x.onclick = function () { C.imgs.splice(i, 1); strip(); };
+    d.appendChild(img); d.appendChild(x); s.appendChild(d);
+  });
+  var add = document.createElement('button'); add.className = 'addimg'; add.textContent = '画像を足す';
+  add.onclick = function () { $('cFile').click(); };
+  s.appendChild(add);
+}
+$('cFile').addEventListener('change', function () {
+  Array.prototype.forEach.call(this.files, function (f) { C.imgs.push({ file: f, url: URL.createObjectURL(f) }); });
+  this.value = ''; strip();
+});
+function shrink(it) {
+  /* 送る前にスマホの中で小さくする（幅1280・高さ2600まで。JPEG） */
+  return new Promise(function (res, rej) {
+    var img = new Image();
+    img.onload = function () {
+      var r = Math.min(1, 1280 / img.naturalWidth, 2600 / img.naturalHeight);
+      var w = Math.round(img.naturalWidth * r), h = Math.round(img.naturalHeight * r);
+      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.drawImage(img, 0, 0, w, h);
+      res({ m: 'image/jpeg', w: w, h: h, d: c.toDataURL('image/jpeg', 0.85).split(',')[1] });
+    };
+    img.onerror = rej;
+    img.src = it.url;
+  });
+}
+$('cSend').addEventListener('click', function () {
+  var text = $('cText').value.replace(/\s+$/, '');
+  if (!text && !C.imgs.length) { toast('文か画像を入れてください'); return; }
+  var btn = this; btn.disabled = true; btn.textContent = '送っています…';
+  Promise.all(C.imgs.map(function (it) { return it.file ? shrink(it) : Promise.resolve({ id: it.id, w: it.w, h: it.h }); }))
+    .then(function (imgs) { return call({ a: C.id ? 'edit' : 'add', k: S.key, id: C.id, text: text, imgs: imgs }); })
+    .then(function (r) {
+      if (!r.ok) { toast(r.msg || 'うまくいきませんでした', 3000); return; }
+      toast(C.id ? '直しました' : '投稿しました');
+      history.back(); window.scrollTo(0, 0); refresh(true);
+    })
+    .catch(function () { toast('送れませんでした。電波を確かめて、もう一度押してください', 3200); })
+    .then(function () { btn.disabled = false; btn.textContent = C.id ? '直す' : '投稿'; });
+});
+
+/* ---------- はじめ ---------- */
+$('fab').classList.toggle('hide', !S.w);
+if (S.key) { render(); refresh(false); } else showLock('');
+if ('serviceWorker' in navigator && !LOCAL) navigator.serviceWorker.register('sw.js').catch(function () {});
+})();
+</script>
+</body>
+</html>
