@@ -13,7 +13,8 @@
 <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <style>
 /* 狙い目ノート（2026-11-17）：グループのノートを写した、見るためのページ。並びはノートと同じ（日付→画像→文→もっと見る）
-   版2：書く形と見せ方を型にした（写真・台名・ポイント・追記・ツールリンク・サイトリンク・内容・やめ時） */
+   版2：書く形と見せ方を型にした（写真・台名・ポイント・追記・ツールリンク・サイトリンク・内容・やめ時）
+   版3：ツールリンクの「期待値表:名前」の行を、押すとアプリの中で期待値表が開くボタンにした */
 :root{
   --bg:#eef0f3; --card:#fff; --line:#e3e5e9; --ink:#1f2328; --sub:#8b9099; --link:#3d6ee0;
   --head:#fff; --chip:#f2f3f5; --dark:#000;
@@ -63,6 +64,8 @@ main{max-width:640px;margin:0 auto;padding:10px 10px calc(env(safe-area-inset-bo
 .lb{font-size:12px;font-weight:600;color:var(--sub);margin:0 0 1px}
 .tx{font-size:15px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
 .tx a{color:var(--link);word-break:break-all}
+.tx .hy{display:inline-block;margin:2px 0;padding:7px 12px;border-radius:8px;background:#eaf0fd;color:var(--link);font-size:14px;font-weight:600;line-height:1.4;text-align:left}
+.tx .hy:active{background:#d8e3fb}
 .more{display:block;padding:0 14px 12px;font-size:14px;color:var(--link)}
 .foot{height:10px}
 .empty{text-align:center;color:var(--sub);padding:48px 0;font-size:14px}
@@ -81,6 +84,14 @@ main{max-width:640px;margin:0 auto;padding:10px 10px calc(env(safe-area-inset-bo
 .arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;color:#fff;font-size:30px;background:rgba(255,255,255,.08)}
 .arrow.l{left:0}.arrow.r{right:0}
 @media (hover:none){.arrow{display:none}}
+
+/* 期待値表を見る */
+.hyv{position:fixed;inset:0;background:#fff;z-index:22;display:flex;flex-direction:column}
+.htop{display:flex;align-items:center;gap:4px;padding:calc(env(safe-area-inset-top) + 4px) 8px 4px;border-bottom:1px solid var(--line)}
+.htop button{width:40px;height:40px;font-size:26px;color:#555;flex:none}
+.htop b{flex:1;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hyv iframe{flex:1;min-height:0;width:100%;border:0;background:#f6f7f9}
+.hwait{position:absolute;left:24px;right:24px;top:42%;text-align:center;color:var(--sub);font-size:14px;line-height:1.6}
 
 /* 合言葉・書く・メニューの画面 */
 .sheet{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:30;display:flex;align-items:flex-end;justify-content:center}
@@ -113,6 +124,7 @@ textarea.fi.big{min-height:11em}
 .strip .p{position:relative;width:88px;height:88px;border-radius:6px;overflow:hidden;background:#eee}
 .strip .p img{width:100%;height:100%;object-fit:cover}
 .strip .p button{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:12px;background:rgba(0,0,0,.6);color:#fff;font-size:15px;line-height:24px}
+.pick{margin-top:6px;color:var(--sub);font-size:15px;-webkit-appearance:none;appearance:none}
 .addimg{width:88px;height:88px;border-radius:6px;border:1px dashed #b9bec7;color:var(--sub);font-size:12px;display:grid;place-items:center;text-align:center}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:rgba(30,30,30,.9);color:#fff;
   font-size:13px;padding:9px 14px;border-radius:18px;z-index:50;max-width:86vw;text-align:center}
@@ -142,6 +154,11 @@ textarea.fi.big{min-height:11em}
   <div class="slides" id="slides"></div>
   <button class="arrow l" id="vPrev" aria-label="前">‹</button>
   <button class="arrow r" id="vNext" aria-label="次">›</button>
+</div>
+
+<div class="hyv hide" id="hyv">
+  <div class="htop"><button id="hyClose" aria-label="閉じる">×</button><b id="hyTitle"></b></div>
+  <div class="hwait" id="hyWait"></div>
 </div>
 
 <div class="lock hide" id="lock">
@@ -183,6 +200,7 @@ textarea.fi.big{min-height:11em}
     <label class="fl" for="f_p">ポイント</label><textarea class="fi" id="f_p"></textarea>
     <label class="fl" for="f_a">追記</label><textarea class="fi" id="f_a"></textarea>
     <label class="fl" for="f_t">ツールリンク</label><textarea class="fi" id="f_t" placeholder="住所を1行に1つ" autocapitalize="off" spellcheck="false"></textarea>
+    <select class="fi pick hide" id="f_tpick" aria-label="期待値表を足す"></select>
     <label class="fl" for="f_s">サイトリンク</label><textarea class="fi" id="f_s" placeholder="住所を1行に1つ" autocapitalize="off" spellcheck="false"></textarea>
     <label class="fl" for="f_b">内容</label><textarea class="fi big" id="f_b"></textarea>
     <label class="fl" for="f_y">やめ時</label><textarea class="fi" id="f_y"></textarea>
@@ -199,6 +217,7 @@ var LOCAL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 var API = LOCAL ? '/api' : 'https://script.google.com/macros/s/AKfycbx6S-akWD-M8DDkDkKfLrq7f2HOj6OtGeJLvUTCI8p9mytdRkn5Qw-hNtsU3E-XjYhzbQ/exec';
 var P = 'nerainote_';            /* 同じ住所にほかのアプリもいるので、控えの名前はこれで始める */
 var IMG_CACHE = 'nerainote-img-v1';
+var HY_CACHE = 'nerainote-hyou-v1';
 
 function $(id) { return document.getElementById(id); }
 function ls(k, v) {
@@ -207,11 +226,17 @@ function ls(k, v) {
     if (v === null) localStorage.removeItem(P + k); else localStorage.setItem(P + k, v);
   } catch (e) { return null; }
 }
-var S = { key: ls('key') || '', w: ls('w') === '1', v: ls('v') || '', posts: [], q: '' };
+var S = { key: ls('key') || '', w: ls('w') === '1', v: ls('v') || '', posts: [], q: '', tb: [] };
 /* 型の欄（並びもこの順で見せる）。前の形の控え（text だけ）は内容として読む */
 var F = [['n', '台名'], ['p', 'ポイント'], ['a', '追記'], ['t', 'ツールリンク'], ['s', 'サイトリンク'], ['b', '内容'], ['y', 'やめ時']];
 function fields(p) { return p.f || { b: p.text || '' }; }
 try { S.posts = JSON.parse(ls('posts') || '[]'); } catch (e) { S.posts = []; }
+/* 期待値表の一覧（版3）。[{n:名前, t:台名, at:上げた日時}] */
+try { S.tb = JSON.parse(ls('tb') || '[]'); } catch (e) { S.tb = []; }
+function keep(r) {
+  S.posts = r.posts || []; S.v = r.v || ''; S.tb = r.tb || [];
+  try { ls('posts', JSON.stringify(S.posts)); ls('v', S.v); ls('tb', JSON.stringify(S.tb)); } catch (e) {}
+}
 
 /* ---------- 受け口とのやりとり ---------- */
 function call(q) {
@@ -225,7 +250,7 @@ function toast(t, ms) {
 
 function refresh(force) {
   if (!S.key) { showLock(''); return Promise.resolve(); }
-  return call({ a: 'list', k: S.key, v: force ? '' : S.v }).then(function (r) {
+  return call({ a: 'list', k: S.key, v: force || ls('tb') === null ? '' : S.v }).then(function (r) {
     if (!r.ok) {
       if (r.bad) { S.key = ''; ls('key', null); showLock('合言葉が変わったようです。入れ直してください。'); }
       else toast(r.msg || 'うまくいきませんでした');
@@ -233,8 +258,7 @@ function refresh(force) {
     }
     S.w = !!r.w; ls('w', S.w ? '1' : '0'); $('fab').classList.toggle('hide', !S.w);
     if (r.same) { if (force) toast('最新です'); return; }
-    S.posts = r.posts || []; S.v = r.v || '';
-    try { ls('posts', JSON.stringify(S.posts)); ls('v', S.v); } catch (e) {}
+    keep(r);
     render();
     if (force) toast('最新にしました');
   }).catch(function () {
@@ -255,8 +279,7 @@ $('lockForm').addEventListener('submit', function (e) {
   call({ a: 'list', k: k }).then(function (r) {
     if (!r.ok) { $('lockMsg').textContent = r.msg || '合言葉がちがいます'; return; }
     S.key = k; ls('key', k); S.w = !!r.w; ls('w', S.w ? '1' : '0');
-    S.posts = r.posts || []; S.v = r.v || '';
-    try { ls('posts', JSON.stringify(S.posts)); ls('v', S.v); } catch (e2) {}
+    keep(r);
     $('lockKey').value = ''; $('lock').classList.add('hide');
     $('fab').classList.toggle('hide', !S.w);
     render();
@@ -269,6 +292,15 @@ $('lockForm').addEventListener('submit', function (e) {
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function linkify(s) {
   return esc(s).replace(/https?:\/\/[^\s<>"']+/g, function (u) { return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + '</a>'; });
+}
+/* ツールリンクの「期待値表:名前」の行は、押すと表が開くボタンにする（版3） */
+var HY = /^\s*期待値表\s*[:：]\s*(\S+)\s*$/;
+function tbOf(n) { for (var i = 0; i < S.tb.length; i++) if (S.tb[i].n === n) return S.tb[i]; return { n: n, t: n, at: '' }; }
+function tools(v) {
+  return v.split('\n').map(function (l) {
+    var m = HY.exec(l);
+    return m ? '<button class="hy" data-act="hyou" data-name="' + esc(m[1]) + '">' + esc(tbOf(m[1]).t || m[1]) + ' の期待値表 ›</button>' : linkify(l);
+  }).join('\n');
 }
 function fmt(at) {
   var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(at || '');
@@ -331,7 +363,7 @@ function card(p) {
     var k = x[0], v = f[k];
     if (k === 'n' || !v) return;
     var lab = k === 'b' && !above ? '' : x[1];
-    b += '<div class="sec">' + (lab ? '<div class="lb">' + lab + '</div>' : '') + '<div class="tx">' + linkify(v) + '</div></div>';
+    b += '<div class="sec">' + (lab ? '<div class="lb">' + lab + '</div>' : '') + '<div class="tx">' + (k === 't' ? tools(v) : linkify(v)) + '</div></div>';
     if (k !== 'b') above = true;
   });
   if (b) h += '<div class="body clamp">' + b + '</div><button class="more" data-act="more">…もっと見る</button>';
@@ -348,6 +380,7 @@ $('list').addEventListener('click', function (e) {
   var act = t.dataset.act;
   if (act === 'more') { var tx = t.previousElementSibling; tx.classList.remove('clamp'); t.remove(); }
   else if (act === 'view') openViewer(p, +t.dataset.i);
+  else if (act === 'hyou') openHyou(t.dataset.name);
   else if (act === 'menu') postMenu(p);
 });
 function find(id) { for (var i = 0; i < S.posts.length; i++) if (S.posts[i].id === id) return S.posts[i]; return null; }
@@ -447,11 +480,57 @@ $('slides').addEventListener('scroll', function () { clearTimeout(num.t); num.t 
 $('vClose').addEventListener('click', function () { history.back(); });
 $('vPrev').addEventListener('click', function () { var s = $('slides'); s.scrollBy({ left: -s.clientWidth, behavior: 'smooth' }); });
 $('vNext').addEventListener('click', function () { var s = $('slides'); s.scrollBy({ left: s.clientWidth, behavior: 'smooth' }); });
+/* ---------- 期待値表を見る（版3） ----------
+   受け口から縮めた字をもらってスマホの中でほどき、外と切りはなした枠（iframe。合言葉の控えには届かない）に出す。
+   一度見た表はスマホの中に控え、上げ直されたとき（日時が変わったとき）だけ取り直す */
+var HYO = 0;
+function hyKey(n) { return new Request(new URL('./_hyou/' + encodeURIComponent(n), location.href).href); }
+function hyFromCache(n, at) {
+  if (!('caches' in window) || !at) return Promise.resolve(null);
+  return caches.open(HY_CACHE).then(function (c) { return c.match(hyKey(n)); })
+    .then(function (r) { return r && r.headers.get('x-at') === at ? r.text() : null; }).catch(function () { return null; });
+}
+function hyToCache(n, at, html) {
+  if (!('caches' in window) || !at) return;
+  caches.open(HY_CACHE).then(function (c) { return c.put(hyKey(n), new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'x-at': at } })); }).catch(function () {});
+}
+function gunzip(d) { return new Response(b64blob(d, 'application/gzip').stream().pipeThrough(new DecompressionStream('gzip'))).text(); }
+function openHyou(n) {
+  var my = ++HYO, tb = tbOf(n), raw = !('DecompressionStream' in window);
+  $('hyTitle').textContent = (tb.t || n) + ' の期待値表';
+  $('hyWait').textContent = '表を出しています…'; $('hyWait').classList.remove('hide');
+  var old = $('hyv').querySelector('iframe'); if (old) old.remove();
+  $('hyv').classList.remove('hide'); document.body.style.overflow = 'hidden';
+  history.pushState({ h: 1 }, '');
+  hyFromCache(n, tb.at).then(function (html) {
+    if (html) return html;
+    return call({ a: 'hyou', k: S.key, name: n, raw: raw ? 1 : 0 }).then(function (r) {
+      if (!r.ok) throw { m: r.msg || 'うまくいきませんでした' };
+      return (r.h ? Promise.resolve(r.h) : gunzip(r.d)).then(function (h) { hyToCache(n, r.at, h); return h; });
+    });
+  }).then(function (html) {
+    if (my !== HYO) return;
+    var f = document.createElement('iframe');
+    f.setAttribute('sandbox', 'allow-scripts'); f.setAttribute('title', tb.t || n);
+    f.srcdoc = html;
+    $('hyv').appendChild(f); $('hyWait').classList.add('hide');
+  }).catch(function (e) {
+    if (my === HYO) $('hyWait').textContent = (e && e.m) || 'つながりませんでした。電波を確かめて、もう一度開いてください';
+  });
+}
+function closeHyou() {
+  HYO++; $('hyv').classList.add('hide'); document.body.style.overflow = '';
+  var f = $('hyv').querySelector('iframe'); if (f) f.remove();
+}
+$('hyClose').addEventListener('click', function () { history.back(); });
+
 window.addEventListener('popstate', function () {
-  if (!$('viewer').classList.contains('hide')) closeViewer();
+  if (!$('hyv').classList.contains('hide')) closeHyou();
+  else if (!$('viewer').classList.contains('hide')) closeViewer();
   else if (!$('compose').classList.contains('hide')) closeCompose();
 });
 document.addEventListener('keydown', function (e) {
+  if (!$('hyv').classList.contains('hide')) { if (e.key === 'Escape') history.back(); return; }
   if ($('viewer').classList.contains('hide')) return;
   if (e.key === 'Escape') history.back();
   if (e.key === 'ArrowRight') $('vNext').click();
@@ -489,6 +568,10 @@ function openCompose(p) {
   $('cSend').textContent = p ? '直す' : '投稿';
   var f = p ? fields(p) : {};
   F.forEach(function (x) { $('f_' + x[0]).value = f[x[0]] || ''; });
+  /* ツールリンクの下に、上がっている期待値表をえらんで足す欄（版3） */
+  var tb = S.tb.slice().sort(function (a, b) { return String(a.t || a.n).localeCompare(String(b.t || b.n), 'ja'); });
+  $('f_tpick').innerHTML = '<option value="">＋ 期待値表を足す</option>' + tb.map(function (x) { return '<option value="' + esc(x.n) + '">' + esc(x.t || x.n) + '</option>'; }).join('');
+  $('f_tpick').classList.toggle('hide', !tb.length);
   strip();
   $('compose').classList.remove('hide');
   $('compose').querySelector('.cbody').scrollTop = 0;
@@ -499,6 +582,12 @@ function openCompose(p) {
 function grow(el) { if (el.tagName !== 'TEXTAREA') return; el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; }
 $('compose').addEventListener('input', function (e) { grow(e.target); });
 function closeCompose() { $('compose').classList.add('hide'); }
+$('f_tpick').addEventListener('change', function () {
+  var n = this.value, el = $('f_t'), v = el.value.replace(/\s+$/, '');
+  this.value = '';
+  if (!n || v.split('\n').some(function (l) { var m = HY.exec(l); return m && m[1] === n; })) return;
+  el.value = (v ? v + '\n' : '') + '期待値表:' + n; grow(el);
+});
 $('cCancel').addEventListener('click', function () { history.back(); });
 function strip() {
   var s = $('cStrip'); s.textContent = '';
