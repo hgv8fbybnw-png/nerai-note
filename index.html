@@ -9,8 +9,11 @@
 <meta name="apple-mobile-web-app-title" content="狙い目ノート">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://script.google.com" crossorigin>
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
 <style>
-/* 狙い目ノート（2026-11-17）：グループのノートを写した、見るためのページ。並びはノートと同じ（日付→画像→文→もっと見る） */
+/* 狙い目ノート（2026-11-17）：グループのノートを写した、見るためのページ。並びはノートと同じ（日付→画像→文→もっと見る）
+   版2：書く形と見せ方を型にした（写真・台名・ポイント・追記・ツールリンク・サイトリンク・内容・やめ時） */
 :root{
   --bg:#eef0f3; --card:#fff; --line:#e3e5e9; --ink:#1f2328; --sub:#8b9099; --link:#3d6ee0;
   --head:#fff; --chip:#f2f3f5; --dark:#000;
@@ -53,8 +56,12 @@ main{max-width:640px;margin:0 auto;padding:10px 10px calc(env(safe-area-inset-bo
 .ph.nm{grid-template-columns:repeat(3,1fr)}
 .ph.nm .t{aspect-ratio:1}
 .ph.nm .t:first-child{grid-column:1/-1;aspect-ratio:1.6}
-.tx{padding:12px 14px 4px;font-size:15px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
-.tx.clamp{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:7;overflow:hidden}
+.body{padding:12px 14px 4px}
+.body.clamp{max-height:12.8em;overflow:hidden}
+.nm{font-size:16px;font-weight:700;line-height:1.5;margin:0 0 6px;overflow-wrap:anywhere}
+.sec{margin:0 0 8px}
+.lb{font-size:12px;font-weight:600;color:var(--sub);margin:0 0 1px}
+.tx{font-size:15px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
 .tx a{color:var(--link);word-break:break-all}
 .more{display:block;padding:0 14px 12px;font-size:14px;color:var(--link)}
 .foot{height:10px}
@@ -95,9 +102,14 @@ main{max-width:640px;margin:0 auto;padding:10px 10px calc(env(safe-area-inset-bo
 .ctop b{font-size:16px}
 .ctop button{padding:8px 10px;font-size:15px}
 .ctop .send{color:#fff;background:#2b3a55;border-radius:8px;font-weight:600}
-.cbody{flex:1;overflow-y:auto;padding:12px}
-.cbody textarea{width:100%;min-height:40vh;border:0;outline:none;font-size:16px;line-height:1.6;resize:none;font-family:inherit}
-.strip{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cbody{flex:1;overflow-y:auto;padding:4px 12px calc(env(safe-area-inset-bottom) + 40px)}
+.fl{display:block;font-size:13px;font-weight:600;color:var(--sub);margin:14px 0 5px}
+.fi{display:block;width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:16px;line-height:1.6;
+  font-family:inherit;color:var(--ink);outline:none;resize:none;background:#fff}
+.fi:focus{border-color:#9db3e8}
+textarea.fi{min-height:5.4em;overflow:hidden}
+textarea.fi.big{min-height:11em}
+.strip{display:flex;flex-wrap:wrap;gap:6px}
 .strip .p{position:relative;width:88px;height:88px;border-radius:6px;overflow:hidden;background:#eee}
 .strip .p img{width:100%;height:100%;object-fit:cover}
 .strip .p button{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:12px;background:rgba(0,0,0,.6);color:#fff;font-size:15px;line-height:24px}
@@ -136,7 +148,7 @@ main{max-width:640px;margin:0 auto;padding:10px 10px calc(env(safe-area-inset-bo
   <form class="panel" id="lockForm">
     <h2>合言葉を入れてください</h2>
     <p>グループで伝えられた合言葉です。一度入れると、このスマホでは次から入れなくて大丈夫です。</p>
-    <input class="field" id="lockKey" type="password" autocomplete="current-password" placeholder="合言葉">
+    <input class="field" id="lockKey" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="合言葉">
     <div class="msg" id="lockMsg"></div>
     <button class="btn" id="lockGo" type="submit">開く</button>
   </form>
@@ -164,9 +176,16 @@ main{max-width:640px;margin:0 auto;padding:10px 10px calc(env(safe-area-inset-bo
 <div class="compose hide" id="compose">
   <div class="ctop"><button id="cCancel">やめる</button><b id="cTitle">ノートを書く</b><button class="send" id="cSend">投稿</button></div>
   <div class="cbody">
-    <textarea id="cText" placeholder="ここに書く"></textarea>
+    <span class="fl">写真</span>
     <div class="strip" id="cStrip"></div>
     <input id="cFile" type="file" accept="image/*" multiple class="hide">
+    <label class="fl" for="f_n">台名</label><input class="fi" id="f_n" type="text" autocomplete="off">
+    <label class="fl" for="f_p">ポイント</label><textarea class="fi" id="f_p"></textarea>
+    <label class="fl" for="f_a">追記</label><textarea class="fi" id="f_a"></textarea>
+    <label class="fl" for="f_t">ツールリンク</label><textarea class="fi" id="f_t" placeholder="住所を1行に1つ" autocapitalize="off" spellcheck="false"></textarea>
+    <label class="fl" for="f_s">サイトリンク</label><textarea class="fi" id="f_s" placeholder="住所を1行に1つ" autocapitalize="off" spellcheck="false"></textarea>
+    <label class="fl" for="f_b">内容</label><textarea class="fi big" id="f_b"></textarea>
+    <label class="fl" for="f_y">やめ時</label><textarea class="fi" id="f_y"></textarea>
   </div>
 </div>
 
@@ -189,6 +208,9 @@ function ls(k, v) {
   } catch (e) { return null; }
 }
 var S = { key: ls('key') || '', w: ls('w') === '1', v: ls('v') || '', posts: [], q: '' };
+/* 型の欄（並びもこの順で見せる）。前の形の控え（text だけ）は内容として読む */
+var F = [['n', '台名'], ['p', 'ポイント'], ['a', '追記'], ['t', 'ツールリンク'], ['s', 'サイトリンク'], ['b', '内容'], ['y', 'やめ時']];
+function fields(p) { return p.f || { b: p.text || '' }; }
 try { S.posts = JSON.parse(ls('posts') || '[]'); } catch (e) { S.posts = []; }
 
 /* ---------- 受け口とのやりとり ---------- */
@@ -267,7 +289,7 @@ function render() {
   list.textContent = '';
   S.posts.forEach(function (p) {
     if (q) {
-      if (!p._n) p._n = norm(p.text);
+      if (!p._n) { var f = fields(p); p._n = norm(F.map(function (x) { return f[x[0]] || ''; }).join(' ')); }
       if (p._n.indexOf(q) < 0) return;
     }
     frag.appendChild(card(p)); shown++;
@@ -281,7 +303,7 @@ function render() {
   $('count').classList.toggle('hide', !q);
   $('count').textContent = shown + '件';
   requestAnimationFrame(function () {
-    list.querySelectorAll('.tx.clamp').forEach(function (t) {
+    list.querySelectorAll('.body.clamp').forEach(function (t) {
       if (t.scrollHeight <= t.clientHeight + 2) { t.classList.remove('clamp'); var b = t.nextElementSibling; if (b && b.classList.contains('more')) b.remove(); }
     });
     watchImages();
@@ -302,7 +324,17 @@ function card(p) {
     }
     h += '</div>';
   }
-  if (p.text) h += '<div class="tx clamp">' + linkify(p.text) + '</div><button class="more" data-act="more">…もっと見る</button>';
+  /* 台名は太字。ほかの欄は名前をつけて並べる。内容の名前は、上にほかの欄があるときだけ出す（前の投稿は今までと同じ見た目） */
+  var f = fields(p), b = '', above = false;
+  if (f.n) b += '<div class="nm">' + esc(f.n) + '</div>';
+  F.forEach(function (x) {
+    var k = x[0], v = f[k];
+    if (k === 'n' || !v) return;
+    var lab = k === 'b' && !above ? '' : x[1];
+    b += '<div class="sec">' + (lab ? '<div class="lb">' + lab + '</div>' : '') + '<div class="tx">' + linkify(v) + '</div></div>';
+    if (k !== 'b') above = true;
+  });
+  if (b) h += '<div class="body clamp">' + b + '</div><button class="more" data-act="more">…もっと見る</button>';
   h += '<div class="foot"></div>';
   a.innerHTML = h;
   return a;
@@ -355,9 +387,10 @@ function getImg(id) {
   });
   return w.p;
 }
+/* 1回の取り寄せに2〜3秒かかるので、2枚ずつを6つ同時に取りに行く（1枚目が早く出る） */
 function pump() {
-  while (RUNNING < 2 && QUEUE.length) {
-    var ids = QUEUE.splice(0, 4); RUNNING++;
+  while (RUNNING < 6 && QUEUE.length) {
+    var ids = QUEUE.splice(0, 2); RUNNING++;
     call({ a: 'imgs', k: S.key, ids: ids }).then(function (ids) {
       return function (r) {
         ids.forEach(function (id) {
@@ -383,7 +416,7 @@ function watchImages() {
   if (!('IntersectionObserver' in window)) { imgs.forEach(showImg); return; }
   if (!io) io = new IntersectionObserver(function (es) {
     es.forEach(function (e) { if (e.isIntersecting) { io.unobserve(e.target); showImg(e.target); } });
-  }, { rootMargin: '800px 0px' });
+  }, { rootMargin: '1600px 0px' });
   imgs.forEach(function (el) { io.observe(el); });
 }
 
@@ -454,11 +487,17 @@ function openCompose(p) {
   C.imgs = p ? p.imgs.map(function (im) { return { id: im.id, w: im.w, h: im.h }; }) : [];
   $('cTitle').textContent = p ? 'ノートを直す' : 'ノートを書く';
   $('cSend').textContent = p ? '直す' : '投稿';
-  $('cText').value = p ? p.text : '';
+  var f = p ? fields(p) : {};
+  F.forEach(function (x) { $('f_' + x[0]).value = f[x[0]] || ''; });
   strip();
   $('compose').classList.remove('hide');
+  $('compose').querySelector('.cbody').scrollTop = 0;
+  F.forEach(function (x) { grow($('f_' + x[0])); });
   history.pushState({ c: 1 }, '');
 }
+/* 書く欄は、書いた分だけ縦にのびる */
+function grow(el) { if (el.tagName !== 'TEXTAREA') return; el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; }
+$('compose').addEventListener('input', function (e) { grow(e.target); });
 function closeCompose() { $('compose').classList.add('hide'); }
 $('cCancel').addEventListener('click', function () { history.back(); });
 function strip() {
@@ -471,7 +510,7 @@ function strip() {
     x.onclick = function () { C.imgs.splice(i, 1); strip(); };
     d.appendChild(img); d.appendChild(x); s.appendChild(d);
   });
-  var add = document.createElement('button'); add.className = 'addimg'; add.textContent = '画像を足す';
+  var add = document.createElement('button'); add.className = 'addimg'; add.textContent = '写真を足す';
   add.onclick = function () { $('cFile').click(); };
   s.appendChild(add);
 }
@@ -495,11 +534,12 @@ function shrink(it) {
   });
 }
 $('cSend').addEventListener('click', function () {
-  var text = $('cText').value.replace(/\s+$/, '');
-  if (!text && !C.imgs.length) { toast('文か画像を入れてください'); return; }
+  var f = {}, any = false;
+  F.forEach(function (x) { var v = $('f_' + x[0]).value.replace(/\s+$/, ''); f[x[0]] = v; if (v.trim()) any = true; });
+  if (!any && !C.imgs.length) { toast('文か写真を入れてください'); return; }
   var btn = this; btn.disabled = true; btn.textContent = '送っています…';
   Promise.all(C.imgs.map(function (it) { return it.file ? shrink(it) : Promise.resolve({ id: it.id, w: it.w, h: it.h }); }))
-    .then(function (imgs) { return call({ a: C.id ? 'edit' : 'add', k: S.key, id: C.id, text: text, imgs: imgs }); })
+    .then(function (imgs) { return call({ a: C.id ? 'edit' : 'add', k: S.key, id: C.id, f: f, imgs: imgs }); })
     .then(function (r) {
       if (!r.ok) { toast(r.msg || 'うまくいきませんでした', 3000); return; }
       toast(C.id ? '直しました' : '投稿しました');
