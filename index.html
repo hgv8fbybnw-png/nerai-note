@@ -14,7 +14,8 @@
 <style>
 /* 狙い目ノート（2026-11-17）：グループのノートを写した、見るためのページ。並びはノートと同じ（日付→画像→文→もっと見る）
    版2：書く形と見せ方を型にした（写真・台名・ポイント・追記・ツールリンク・サイトリンク・内容・やめ時）
-   版3：ツールリンクの「期待値表:名前」の行を、押すとアプリの中で期待値表が開くボタンにした */
+   版3：ツールリンクの「期待値表:名前」の行を、押すとアプリの中で期待値表が開くボタンにした
+   版4：期待値表の中の道具（バジリスク絆2天膳の差枚計算）が入れた数字を、このスマホに残す */
 :root{
   --bg:#eef0f3; --card:#fff; --line:#e3e5e9; --ink:#1f2328; --sub:#8b9099; --link:#3d6ee0;
   --head:#fff; --chip:#f2f3f5; --dark:#000;
@@ -523,6 +524,14 @@ function closeHyou() {
   var f = $('hyv').querySelector('iframe'); if (f) f.remove();
 }
 $('hyClose').addEventListener('click', function () { history.back(); });
+/* 期待値表の中の道具が入れた数字を、このスマホに控える（版4）。表は外と切りはなした枠なので、枠の中には残せない。
+   受けるのは今開いている枠からの「控えて（save）」「出して（load）」だけ。控えの名前は英数字40字まで、中身は2万字まで */
+window.addEventListener('message', function (e) {
+  var f = $('hyv').querySelector('iframe'), m = e.data;
+  if (!f || e.source !== f.contentWindow || !m || typeof m !== 'object' || typeof m.key !== 'string' || !/^[A-Za-z0-9_-]{1,40}$/.test(m.key)) return;
+  if (m.t === 'save' && typeof m.v === 'string' && m.v.length <= 20000) ls('tool_' + m.key, m.v);
+  else if (m.t === 'load') f.contentWindow.postMessage({ t: 'loaded', key: m.key, v: ls('tool_' + m.key) || '' }, '*');
+});
 
 window.addEventListener('popstate', function () {
   if (!$('hyv').classList.contains('hide')) closeHyou();
