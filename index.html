@@ -17,7 +17,8 @@
    版3：ツールリンクの「期待値表:名前」の行を、押すとアプリの中で期待値表が開くボタンにした
    版4：期待値表の中の道具（バジリスク絆2天膳の差枚計算）が入れた数字を、このスマホに残す
    版5：投稿の文の中の用語に点線と小さい「？」。押すと説明の吹き出し（2026-11-25）
-   版6：題の右の3本線で、ノート・メモ（1人1人の、このスマホの中だけのメモ）・用語集・問題集（準備中）を切り替える（2026-11-25） */
+   版6：題の右の3本線で、ノート・メモ（1人1人の、このスマホの中だけのメモ）・用語集・問題集（準備中）を切り替える（2026-11-25）
+   版7：投稿の文の中の 差枚・MY・有利区間・有利区間切断・リセット は「？」でなく青い字にし、押すと用語集のその説明へ飛ぶ（2026-11-25） */
 :root{
   --bg:#eef0f3; --card:#fff; --line:#e3e5e9; --ink:#1f2328; --sub:#8b9099; --link:#3d6ee0;
   --head:#fff; --chip:#f2f3f5; --dark:#000;
@@ -157,6 +158,9 @@ textarea.fi.big{min-height:11em}
 .term .one{font-size:14px;font-weight:700;color:var(--link);margin:0 0 6px;line-height:1.5}
 .term p{font-size:14px;line-height:1.7;margin:0 0 4px;overflow-wrap:anywhere}
 .term .ex{background:#f4f5f7;border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.6;color:#444;margin:6px 0 2px}
+.term{transition:background-color .6s}
+.term.hit{background:#eaf0fd}
+.gl{color:var(--link);cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none}
 .soon{text-align:center;color:var(--sub);padding:56px 16px;font-size:15px;line-height:1.8}
 
 /* 用語の「？」と吹き出し（版5・2026-11-25。オーナーが見本を見て「この形で作る」）。
@@ -381,39 +385,54 @@ function norm(s) {
 var TERMS = [{"w":"通常時","d":["ボーナスやATなどの特別な状態じゃない事を指します、メダルを消費して当たり状態を目指す基本の状態です。"]},{"w":"レア役","d":["遊戯中に中々出ない子役の事を指します、主にスイカ、チェリー、チャンス目のように台によって設計されています。"]},{"w":"前兆","d":["CZやボーナスの当たりが近付いている、またはすでに当たっている可能性が高い事を知らせる演出状態の事を指します。主にガセ前兆と本前兆の２つ"]},{"w":"天井","d":["通常時に設けられている救済措置、大体の台には天井ゲーム数が設定されており、そこでBBやATなどに必ず当たってくれる仕組み"]},{"w":"CZ","d":["チャンスゾーンの略、主に通常時はCZを目指してそこからBBやATへの当選を抽選している事が多いです。"]},{"w":"BB","d":["ビッグボーナスの略、台によってはメインの当たりとして搭載されている事が多い、BB→ATというルートもあります。"]},{"w":"RB","d":["レギュラーボーナスの略、BBが搭載されている台の残念な方として用意されている事が多いです。","レグ、バケなどの言い方もします。"]},{"w":"AT","d":["アシストタイムの略、メインの大当たり状態を指す事が多く、メダルを増やすチャンスの状態です。"]},{"w":"スルー/何スルー","d":["主にメインの当たり(ATなど)を目指す際にCZやボーナスを外した時に使います、「3回連続でCZを外したからこの台は今3スルーだ」"]},{"w":"◯◯間","d":["CZやATなどのハマりゲーム数を表す時に使います、\"AT間天井\"が設定されてる台などで使う事が多いです。","「この台は前回CZが500Gでスルーしていて当該ゲーム数が100Gだから\"AT間\"が600Gだ」"]},{"w":"単発","d":["その台のメインの当たり(ATやSTなど)で1度も連チャン出来ずに終わってしまった状態の事を指す。"]},{"w":"駆け抜け","d":["1度も上乗せや連チャンを出来ずに終わった状態の事を指す、基本的に単発とほぼ同じ意味です。"]},{"w":"上位AT","d":["通常のATよりも性能が大幅に強化され、出玉を増やす大チャンスの状態です。"]},{"w":"アイキャッチ","d":["ステージの切り替わりやAT終了時などに出現する1枚目や演出を指します。主に内部モードや規定ゲーム数の示唆をしている事が多い。"]},{"w":"モード","d":["通常時にATやCZの当たりやすさを内部的に決めるシステムです、主に通常A/通常B/天国などの種類があります。"]},{"w":"規定ゲーム数","d":["天井とは別に、ATやCZの当選率が高くなる特定のゲーム数や状態の事を指します、\"ゾーン\"と呼ぶ事が多いです。"]}];
 var TIPK = 'paby';
 function reEsc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-var TIP = (function () {
+/* 版7：用語集の新しい5つ（GLOSS_NEW）は「？」でなく青い字（.gl）。押すと用語集のその説明へ飛ぶ（オーナー「この５つは？ではなく青文字みたいにして押したら説明ページに飛べるようにして欲しい」）。
+   「有利区間切れ」も有利区間切断へ飛ぶ（説明に「有利区間切れ」とも言う、とあるため）。リセ後はリセットとは別なのでつけない */
+var GL_ALIAS = { '有利区間切れ': '有利区間切断' };
+var TIP = null;
+function tipRe() {
+  if (TIP) return TIP;
   var alts = [];
   TERMS.forEach(function (t, i) {
     t.w.split('/').forEach(function (a) {
       a = a.trim(); if (!a) return;
       var wild = a.indexOf('◯◯') >= 0;
-      alts.push({ src: wild ? a.split('◯◯').map(reEsc).join('(?:[A-Za-z]{2,5}|ボーナス)') : reEsc(a), i: i, ascii: /^[A-Za-z]+$/.test(a), n: wild ? 99 : a.length });
+      alts.push({ src: wild ? a.split('◯◯').map(reEsc).join('(?:[A-Za-z]{2,5}|ボーナス)') : reEsc(a), i: i, g: '', ascii: /^[A-Za-z]+$/.test(a), n: wild ? 99 : a.length });
     });
   });
+  Object.keys(GLOSS_NEW).concat(Object.keys(GL_ALIAS)).forEach(function (a) {
+    var w = GL_ALIAS.hasOwnProperty(a) ? GL_ALIAS[a] : a;
+    alts.push({ src: reEsc(a), i: 'g' + w, g: w, ascii: /^[A-Za-z]+$/.test(a), n: a.length });
+  });
   alts.sort(function (a, b) { return b.n - a.n; });
-  return { alts: alts, re: new RegExp(alts.map(function (a) { return '(' + a.src + ')'; }).join('|'), 'gi') };
-})();
+  TIP = { alts: alts, re: new RegExp(alts.map(function (a) { return '(' + a.src + ')'; }).join('|'), 'gi') };
+  return TIP;
+}
 function tipMark(root) {
   var used = {}, nodes = [];
   root.querySelectorAll('.tt').forEach(function (el) {
     var walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), n;
-    while ((n = walk.nextNode())) if (n.nodeValue.trim() && !n.parentElement.closest('a, button, .tw')) nodes.push(n);
+    while ((n = walk.nextNode())) if (n.nodeValue.trim() && !n.parentElement.closest('a, button, .tw, .gl')) nodes.push(n);
   });
   nodes.forEach(function (node) {
-    var s = node.nodeValue, hit = [], m, re = TIP.re;
+    var s = node.nodeValue, hit = [], m, T = tipRe(), re = T.re;
     re.lastIndex = 0;
     while ((m = re.exec(s))) {
       var k = 1; while (m[k] === undefined) k++;
-      var a = TIP.alts[k - 1], at = m.index, end = at + m[0].length;
+      var a = T.alts[k - 1], at = m.index, end = at + m[0].length;
       if (a.ascii && (/[A-Za-z]/.test(s.charAt(at - 1)) || /[A-Za-z]/.test(s.charAt(end)))) { re.lastIndex = at + 1; continue; }
       if (used[a.i]) continue;
-      used[a.i] = 1; hit.push([at, end, a.i]);
+      used[a.i] = 1; hit.push([at, end, a.i, a.g]);
     }
     if (!hit.length) return;
     var f = document.createDocumentFragment(), last = 0;
     hit.forEach(function (x) {
       f.appendChild(document.createTextNode(s.slice(last, x[0])));
       var w = document.createElement('span');
+      if (x[3]) {
+        w.className = 'gl'; w.setAttribute('role', 'link'); w.setAttribute('tabindex', '0'); w.setAttribute('data-gl', x[3]);
+        w.textContent = s.slice(x[0], x[1]);
+        f.appendChild(w); last = x[1]; return;
+      }
       w.className = 'tw'; w.setAttribute('role', 'button'); w.setAttribute('tabindex', '0'); w.setAttribute('aria-expanded', 'false'); w.setAttribute('data-tw', String(x[2]));
       w.textContent = s.slice(x[0], x[1]);
       w.insertAdjacentHTML('beforeend', '<span class="q" aria-hidden="true">?</span>');
@@ -447,13 +466,16 @@ function tipShow(w) {
 document.addEventListener('click', function (e) {
   if (e.target.closest('.tip-x')) { tipClose(); return; }
   if (e.target.closest('.tip')) return;
+  var g = e.target.closest('.gl[data-gl]');
+  if (g) { tipClose(); goGloss(g.getAttribute('data-gl')); return; }
   var w = e.target.closest('.tw[data-tw]');
   if (w) { tipShow(w); return; }
   if (tipOpen) tipClose();
 });
 document.addEventListener('keydown', function (e) {
-  var w = e.target.closest && e.target.closest('.tw[data-tw]');
-  if (w && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tipShow(w); }
+  var w = e.target.closest && e.target.closest('.tw[data-tw]'), g = e.target.closest && e.target.closest('.gl[data-gl]');
+  if (g && e.key === 'Enter') { e.preventDefault(); goGloss(g.getAttribute('data-gl')); }
+  else if (w && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tipShow(w); }
   else if (e.key === 'Escape') tipClose();
 });
 var tipWidth = window.innerWidth;
@@ -683,6 +705,7 @@ window.addEventListener('popstate', function () {
   else if (!$('viewer').classList.contains('hide')) closeViewer();
   else if (!$('compose').classList.contains('hide')) closeCompose();
   else if (!$('medit').classList.contains('hide')) closeMemo();
+  else if (GJ) { var y = GJ.y; GJ = null; setTab('note'); window.scrollTo(0, y); requestAnimationFrame(function () { window.scrollTo(0, y); }); }
 });
 document.addEventListener('keydown', function (e) {
   if (!$('hyv').classList.contains('hide')) { if (e.key === 'Escape') history.back(); return; }
@@ -731,7 +754,7 @@ $('tabBtn').addEventListener('click', function () {
 });
 $('tabs').addEventListener('click', function (e) {
   var b = e.target.closest('[data-tab]');
-  if (b) setTab(b.dataset.tab);
+  if (b) { GJ = null; setTab(b.dataset.tab); }
   if (b || !e.target.closest('.tp')) { $('tabs').classList.add('hide'); $('tabBtn').setAttribute('aria-expanded', 'false'); }
 });
 
@@ -783,14 +806,26 @@ $('meDel').addEventListener('click', function () {
 var GLOSS_ONE = {"通常時": "当たっていない、ふだんの状態", "モード": "次の当たりやすさを決める、台の中の見えない状態", "前兆": "当たりが近いかもしれない、と知らせる演出", "アイキャッチ": "場面の切り替わりで出る絵や演出（モードなどのヒント）", "レア役": "なかなか出ない小役（スイカ・チェリー・チャンス目など）", "CZ": "当たり（ATやボーナス）につながるチャンスの状態", "BB": "大きいボーナス", "RB": "小さいボーナス（レグ・バケ）", "AT": "メダルが増える、メインの当たり", "上位AT": "ふつうのATより強いAT", "天井": "ここまで回せば必ず当たる、というゲーム数", "規定ゲーム数": "当たりやすくなるゲーム数（ゾーン）", "◯◯間": "前の◯◯（ATやCZなど）から、何ゲーム回しているか", "スルー/何スルー": "CZやボーナスで、当たりを逃した回数", "単発": "ATなどが1回で終わること（連チャンなし）", "駆け抜け": "上乗せも連チャンもなく終わること"};
 var GLOSS_NEW = {"差枚": {"one": "出たメダルと、入れたメダルの差", "d": ["入れたメダルの数と、出てきたメダルの数の差の事を指します。プラスなら入れた分より多く出ている、マイナスなら負けている状態です。", "台の上のデータ表示機のグラフの高さが差枚です。", "「1000枚入れて1500枚出たから、差枚は＋500枚だ」"]}, "MY": {"one": "グラフのいちばん低い所から、いちばん高い所までの幅", "d": ["有利区間の中で、差枚がいちばん下がった所（谷底）から、いちばん上がった所（頂点）までの幅の事を指します。一撃でどれだけ出たかを表す時に使います。", "谷底から数えるので、それまでに入れたメダルは数えません。サイトによっては、その日いちばん大きく出た差枚の意味で使う事もあります。", "6.4号機までは、MYが2400枚に届くと有利区間が終わる決まりでした。今の台（6.5号機・スマスロ）は、MYではなく「有利区間が始まってからの差枚」で上限が決まります（有利区間を見てください）。", "「−1000枚まで沈んでから＋1500枚まで出たから、MYは2500枚だ」"]}, "有利区間": {"one": "ATなどの当たりを取れる区間", "d": ["ATなどの抽選を受けられる区間の事を指します（AT中も含みます）。天井もこの中にあります。", "有利区間には上限があり、今の台（6.5号機・スマスロ）は、有利区間が始まった時から差枚が＋2400枚になると終わります。メダルの6.5号機は4000Gでも終わります。", "そのため、有利区間の中で深く沈んでいた台ほど一撃で多く取れ、すでに浮いている台は少ししか取れません。", "「有利区間の中で−1500枚まで沈んでから天井でATに当たったから、＋2400枚まで、つまり3900枚取れる」"]}, "有利区間切断": {"one": "有利区間が終わって、はじめからになること", "d": ["有利区間が終わる事を指します。「有利区間切れ」とも言います。", "上限（差枚＋2400枚など）に届いた時のほか、リセットや、ATが終わったあとなど、台ごとの条件でも切れます。", "切れると、天井までのゲーム数やモードがはじめからになる台があります（台によって違います）。", "切れたあとに当たりやすくなる恩恵がある台もあり、それを狙うのが「有利区間切断狙い」です（例：番長4の頂RISE UP）。"]}, "リセット": {"one": "お店が台の設定を変えること（設定変更）", "d": ["お店が閉店後や朝に、台の設定を変える（設定変更する）事を指します。", "リセットすると、天井までのゲーム数や有利区間がはじめからになる台が多く、天井が短くなる・天国に移りやすくなるなどの「リセット恩恵」がある台もあります（台によって違います）。", "設定を変えずに電源を入れ直しただけの台は「据え置き」と言い、前の日のゲーム数が残っている事が多いです（宵越し）。", "リセットしたあとの台を「リセ後」と言います。"]}};
 var GLOSS = [["ふだんの状態と台の中", ["通常時", "モード", "前兆", "アイキャッチ", "レア役"]], ["当たりの種類", ["CZ", "BB", "RB", "AT", "上位AT"]], ["天井とゲーム数", ["天井", "規定ゲーム数", "◯◯間", "スルー/何スルー"]], ["当たりの終わり方", ["単発", "駆け抜け"]], ["有利区間・差枚・リセット", ["差枚", "MY", "有利区間", "有利区間切断", "リセット"]]];
+var GL_N = {}, GJ = null;   /* GL_N：言葉→用語集の中の番号。GJ：青い字から飛ぶ前のノートの位置（スマホの戻るで戻す） */
+function goGloss(w) {
+  GJ = { y: window.scrollY };
+  history.pushState({ g: 1 }, '');   /* 先に積む（ノートの位置が前の段に控えられる） */
+  setTab('terms');
+  var el = $('gl-' + GL_N[w]);
+  if (!el) return;
+  window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - document.querySelector('header').offsetHeight - 8);
+  document.querySelectorAll('.term.hit').forEach(function (x) { x.classList.remove('hit'); });
+  clearTimeout(goGloss.t); el.classList.add('hit'); goGloss.t = setTimeout(function () { el.classList.remove('hit'); }, 1600);
+}
 function renderGloss() {
-  var by = {};
+  var by = {}, k = 0;
   TERMS.forEach(function (t) { by[t.w] = { one: GLOSS_ONE[t.w] || '', d: t.d }; });
   Object.keys(GLOSS_NEW).forEach(function (w) { by[w] = GLOSS_NEW[w]; });
   $('termsV').innerHTML = GLOSS.map(function (g) {
     return '<div class="gh">' + esc(g[0]) + '</div>' + g[1].map(function (w) {
       var t = by[w]; if (!t) return '';
-      return '<div class="term"><h3>' + esc(w) + '</h3>' + (t.one ? '<div class="one">' + esc(t.one) + '</div>' : '') + t.d.map(function (l) {
+      GL_N[w] = k;
+      return '<div class="term" id="gl-' + (k++) + '"><h3>' + esc(w) + '</h3>' + (t.one ? '<div class="one">' + esc(t.one) + '</div>' : '') + t.d.map(function (l) {
         var m = /^(.*?)、?(「.+」)$/.exec(l);
         if (!m) return '<p>' + esc(l) + '</p>';
         return (m[1] ? '<p>' + esc(m[1]) + '</p>' : '') + '<div class="ex">例：' + esc(m[2]) + '</div>';
