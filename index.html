@@ -15,7 +15,8 @@
 /* 狙い目ノート（2026-11-17）：グループのノートを写した、見るためのページ。並びはノートと同じ（日付→画像→文→もっと見る）
    版2：書く形と見せ方を型にした（写真・台名・ポイント・追記・ツールリンク・サイトリンク・内容・やめ時）
    版3：ツールリンクの「期待値表:名前」の行を、押すとアプリの中で期待値表が開くボタンにした
-   版4：期待値表の中の道具（バジリスク絆2天膳の差枚計算）が入れた数字を、このスマホに残す */
+   版4：期待値表の中の道具（バジリスク絆2天膳の差枚計算）が入れた数字を、このスマホに残す
+   版5：投稿の文の中の用語に点線と小さい「？」。押すと説明の吹き出し（2026-11-25） */
 :root{
   --bg:#eef0f3; --card:#fff; --line:#e3e5e9; --ink:#1f2328; --sub:#8b9099; --link:#3d6ee0;
   --head:#fff; --chip:#f2f3f5; --dark:#000;
@@ -129,6 +130,18 @@ textarea.fi.big{min-height:11em}
 .addimg{width:88px;height:88px;border-radius:6px;border:1px dashed #b9bec7;color:var(--sub);font-size:12px;display:grid;place-items:center;text-align:center}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:rgba(30,30,30,.9);color:#fff;
   font-size:13px;padding:9px 14px;border-radius:18px;z-index:50;max-width:86vw;text-align:center}
+
+/* 用語の「？」と吹き出し（版5・2026-11-25。オーナーが見本を見て「この形で作る」）。
+   四角は出さない：言葉の枠・押したときの灰色（tap-highlight）・吹き出しの枠線はなし。吹き出しは角の丸い面と、言葉を指す小さな三角 */
+.tw{cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none;border-bottom:1px dotted var(--link);-webkit-user-select:none;user-select:none}
+.tw .q{display:inline-block;width:15px;height:15px;margin-left:2px;border-radius:50%;background:#eaf0fd;color:var(--link);font-size:11px;font-weight:700;font-style:normal;line-height:15px;text-align:center;vertical-align:2px;white-space:normal}
+.tw[aria-expanded="true"] .q{background:var(--link);color:#fff}
+.tip{position:absolute;z-index:4;background:#fff;color:var(--ink);border-radius:16px;padding:12px 44px 12px 14px;font-size:14px;font-weight:400;line-height:1.6;text-align:left;
+  box-shadow:0 8px 24px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.1)}
+.tip b{display:block;font-size:15px;font-weight:700;margin-bottom:2px;overflow-wrap:anywhere}
+.tip p{margin:0;overflow-wrap:anywhere}
+.tip-x{position:absolute;top:2px;right:2px;width:44px;height:44px;color:var(--sub);font-size:22px;line-height:1;outline:none;-webkit-tap-highlight-color:transparent}
+.tip-t{position:absolute;width:12px;height:12px;background:#fff;transform:rotate(45deg)}
 </style>
 </head>
 <body>
@@ -316,9 +329,99 @@ function norm(s) {
     .replace(/\s+/g, '');
 }
 
+/* ---------- 用語の「？」と吹き出し（版5・2026-11-25） ----------
+   オーナーが狙い目帳の会話で見本を見て「この形で作る」と決め、「ノートの方に作りたかった」で、ノートに作った。
+   言葉と説明：オーナーの用語集の原文16語（言いかえない。オーナー「とりあえずこれ」）。足すときはこの TERMS に足す
+   投稿の ポイント・追記・内容・やめ時 の文で、用語集の言葉が「その投稿で最初に出た所」にだけ点線と「？」（全部につけると「？」だらけになるため）。
+   「スルー/何スルー」は / で分けたどれでも、「◯◯間」は AT間・CZ間・ボーナス間など。長い言葉を先に見る（上位AT・AT間 は AT より先）。
+   英字の言葉は前後が英字ならつけない（ATTACK の AT）。住所・ボタンの中にはつけない。
+   押すと言葉の下（入らなければ上）に吹き出し。もう一度押す・ほかを押す・×で閉じる。横幅が変わったときも閉じる
+   （iPhone は上下に動かすだけで高さが変わるので、高さでは閉じない） */
+var TERMS = [{"w":"通常時","d":["ボーナスやATなどの特別な状態じゃない事を指します、メダルを消費して当たり状態を目指す基本の状態です。"]},{"w":"レア役","d":["遊戯中に中々出ない子役の事を指します、主にスイカ、チェリー、チャンス目のように台によって設計されています。"]},{"w":"前兆","d":["CZやボーナスの当たりが近付いている、またはすでに当たっている可能性が高い事を知らせる演出状態の事を指します。主にガセ前兆と本前兆の２つ"]},{"w":"天井","d":["通常時に設けられている救済措置、大体の台には天井ゲーム数が設定されており、そこでBBやATなどに必ず当たってくれる仕組み"]},{"w":"CZ","d":["チャンスゾーンの略、主に通常時はCZを目指してそこからBBやATへの当選を抽選している事が多いです。"]},{"w":"BB","d":["ビッグボーナスの略、台によってはメインの当たりとして搭載されている事が多い、BB→ATというルートもあります。"]},{"w":"RB","d":["レギュラーボーナスの略、BBが搭載されている台の残念な方として用意されている事が多いです。","レグ、バケなどの言い方もします。"]},{"w":"AT","d":["アシストタイムの略、メインの大当たり状態を指す事が多く、メダルを増やすチャンスの状態です。"]},{"w":"スルー/何スルー","d":["主にメインの当たり(ATなど)を目指す際にCZやボーナスを外した時に使います、「3回連続でCZを外したからこの台は今3スルーだ」"]},{"w":"◯◯間","d":["CZやATなどのハマりゲーム数を表す時に使います、\"AT間天井\"が設定されてる台などで使う事が多いです。","「この台は前回CZが500Gでスルーしていて当該ゲーム数が100Gだから\"AT間\"が600Gだ」"]},{"w":"単発","d":["その台のメインの当たり(ATやSTなど)で1度も連チャン出来ずに終わってしまった状態の事を指す。"]},{"w":"駆け抜け","d":["1度も上乗せや連チャンを出来ずに終わった状態の事を指す、基本的に単発とほぼ同じ意味です。"]},{"w":"上位AT","d":["通常のATよりも性能が大幅に強化され、出玉を増やす大チャンスの状態です。"]},{"w":"アイキャッチ","d":["ステージの切り替わりやAT終了時などに出現する1枚目や演出を指します。主に内部モードや規定ゲーム数の示唆をしている事が多い。"]},{"w":"モード","d":["通常時にATやCZの当たりやすさを内部的に決めるシステムです、主に通常A/通常B/天国などの種類があります。"]},{"w":"規定ゲーム数","d":["天井とは別に、ATやCZの当選率が高くなる特定のゲーム数や状態の事を指します、\"ゾーン\"と呼ぶ事が多いです。"]}];
+var TIPK = 'paby';
+function reEsc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+var TIP = (function () {
+  var alts = [];
+  TERMS.forEach(function (t, i) {
+    t.w.split('/').forEach(function (a) {
+      a = a.trim(); if (!a) return;
+      var wild = a.indexOf('◯◯') >= 0;
+      alts.push({ src: wild ? a.split('◯◯').map(reEsc).join('(?:[A-Za-z]{2,5}|ボーナス)') : reEsc(a), i: i, ascii: /^[A-Za-z]+$/.test(a), n: wild ? 99 : a.length });
+    });
+  });
+  alts.sort(function (a, b) { return b.n - a.n; });
+  return { alts: alts, re: new RegExp(alts.map(function (a) { return '(' + a.src + ')'; }).join('|'), 'gi') };
+})();
+function tipMark(root) {
+  var used = {}, nodes = [];
+  root.querySelectorAll('.tt').forEach(function (el) {
+    var walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), n;
+    while ((n = walk.nextNode())) if (n.nodeValue.trim() && !n.parentElement.closest('a, button, .tw')) nodes.push(n);
+  });
+  nodes.forEach(function (node) {
+    var s = node.nodeValue, hit = [], m, re = TIP.re;
+    re.lastIndex = 0;
+    while ((m = re.exec(s))) {
+      var k = 1; while (m[k] === undefined) k++;
+      var a = TIP.alts[k - 1], at = m.index, end = at + m[0].length;
+      if (a.ascii && (/[A-Za-z]/.test(s.charAt(at - 1)) || /[A-Za-z]/.test(s.charAt(end)))) { re.lastIndex = at + 1; continue; }
+      if (used[a.i]) continue;
+      used[a.i] = 1; hit.push([at, end, a.i]);
+    }
+    if (!hit.length) return;
+    var f = document.createDocumentFragment(), last = 0;
+    hit.forEach(function (x) {
+      f.appendChild(document.createTextNode(s.slice(last, x[0])));
+      var w = document.createElement('span');
+      w.className = 'tw'; w.setAttribute('role', 'button'); w.setAttribute('tabindex', '0'); w.setAttribute('aria-expanded', 'false'); w.setAttribute('data-tw', String(x[2]));
+      w.textContent = s.slice(x[0], x[1]);
+      w.insertAdjacentHTML('beforeend', '<span class="q" aria-hidden="true">?</span>');
+      f.appendChild(w); last = x[1];
+    });
+    f.appendChild(document.createTextNode(s.slice(last)));
+    node.parentNode.replaceChild(f, node);
+  });
+}
+var tipOpen = null;   /* {el 吹き出し, w 押した言葉} */
+function tipClose() { if (tipOpen) { tipOpen.el.remove(); tipOpen.w.setAttribute('aria-expanded', 'false'); tipOpen = null; } }
+function tipShow(w) {
+  var same = tipOpen && tipOpen.w === w, t = TERMS[+w.getAttribute('data-tw')];
+  tipClose();
+  if (same || !t) return;
+  var el = document.createElement('div');
+  el.className = 'tip'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', t.w);
+  el.innerHTML = '<i class="tip-t" aria-hidden="true"></i><b>' + esc(t.w) + '</b>' + t.d.map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('')
+    + '<button type="button" class="tip-x" aria-label="閉じる">×</button>';
+  document.body.appendChild(el);
+  var c = (w.closest('.card') || $('list')).getBoundingClientRect(), r = w.getBoundingClientRect(), x0 = c.left + 8, wd = Math.max(200, c.width - 16);
+  el.style.left = (x0 + window.scrollX) + 'px'; el.style.width = wd + 'px';
+  var h = el.offsetHeight, ceil = document.querySelector('header').getBoundingClientRect().bottom, floor = window.innerHeight;
+  var up = r.bottom + 10 + h > floor - 8 && r.top - 10 - h >= ceil + 8;
+  el.style.top = ((up ? r.top - 10 - h : r.bottom + 10) + window.scrollY) + 'px';
+  var tl = el.querySelector('.tip-t');
+  tl.style.left = Math.min(Math.max(r.left + r.width / 2 - x0 - 6, 14), wd - 26) + 'px'; tl.style[up ? 'bottom' : 'top'] = '-6px';
+  w.setAttribute('aria-expanded', 'true'); tipOpen = { el: el, w: w };
+  if (!up) { var b = el.getBoundingClientRect().bottom; if (b > floor - 8) window.scrollBy(0, b - floor + 16); }
+}
+document.addEventListener('click', function (e) {
+  if (e.target.closest('.tip-x')) { tipClose(); return; }
+  if (e.target.closest('.tip')) return;
+  var w = e.target.closest('.tw[data-tw]');
+  if (w) { tipShow(w); return; }
+  if (tipOpen) tipClose();
+});
+document.addEventListener('keydown', function (e) {
+  var w = e.target.closest && e.target.closest('.tw[data-tw]');
+  if (w && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tipShow(w); }
+  else if (e.key === 'Escape') tipClose();
+});
+var tipWidth = window.innerWidth;
+window.addEventListener('resize', function () { if (window.innerWidth !== tipWidth) { tipWidth = window.innerWidth; tipClose(); } });
+
 /* ---------- 一覧 ---------- */
 function render() {
   var list = $('list'), q = norm(S.q), shown = 0, frag = document.createDocumentFragment();
+  tipClose();
   list.textContent = '';
   S.posts.forEach(function (p) {
     if (q) {
@@ -364,12 +467,13 @@ function card(p) {
     var k = x[0], v = f[k];
     if (k === 'n' || !v) return;
     var lab = k === 'b' && !above ? '' : x[1];
-    b += '<div class="sec">' + (lab ? '<div class="lb">' + lab + '</div>' : '') + '<div class="tx">' + (k === 't' ? tools(v) : linkify(v)) + '</div></div>';
+    b += '<div class="sec">' + (lab ? '<div class="lb">' + lab + '</div>' : '') + '<div class="tx' + (TIPK.indexOf(k) >= 0 ? ' tt' : '') + '">' + (k === 't' ? tools(v) : linkify(v)) + '</div></div>';
     if (k !== 'b') above = true;
   });
   if (b) h += '<div class="body clamp">' + b + '</div><button class="more" data-act="more">…もっと見る</button>';
   h += '<div class="foot"></div>';
   a.innerHTML = h;
+  tipMark(a);
   return a;
 }
 
