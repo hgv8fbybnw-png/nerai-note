@@ -26,7 +26,8 @@
    版12：投稿の頭の台の名前を薄めの緑にし、押すと台の説明（天井と、G数に関わる示唆のタイミング）の吹き出し。説明は合言葉の奥の「_台の情報」（2026-11-27）
    版15：画像つきの言葉（レア役・AT・AT終了画面・アイキャッチ）は黄色にし、吹き出しに写真を出す（2026-11-27）
    版16：「示唆」を青い言葉にし、説明の下に例として AT終了画面 の写真。用語集にも足した（2026-11-27）
-   版17：用語集の文も、吹き出しと同じく言葉のまとまりの間でだけ改行する（2026-11-27） */
+   版17：用語集の文も、吹き出しと同じく言葉のまとまりの間でだけ改行する（2026-11-27）
+   版18：版15の4語（レア役・AT・AT終了画面・アイキャッチ）は青に戻す（写真はそのまま）。黄色はこのあと送られる言葉から（2026-11-27） */
 :root{
   --bg:#eef0f3; --card:#fff; --line:#e3e5e9; --ink:#1f2328; --sub:#8b9099; --link:#3d6ee0;
   --head:#fff; --chip:#f2f3f5; --dark:#000;
@@ -468,6 +469,8 @@ var TERMS_X = [
     "pic": [["img/atend.jpg", 720, 595, "例：AT終了画面（東京喰種）"]] }
 ];
 var TALL = TERMS.concat(TERMS_X);
+/* 版18：黄色にする言葉（オーナー「さっき黄色にしてっていったところは青でいいや」「次から送るものを黄色で」）。写真の有る無しとは別に決める */
+var TYEL = {};
 var TIMG = {
   "レア役": [["img/rea.jpg", 720, 392, "東京喰種の例"]],
   "AT": [["img/at.jpg", 720, 696, "東京喰種の例"]],
@@ -529,7 +532,7 @@ function tipMark(root) {
         w.textContent = s.slice(x[0], x[1]);
         f.appendChild(w); last = x[1]; return;
       }
-      w.className = TIMG[TALL[x[2]].w] ? 'tw ty' : 'tw'; w.setAttribute('role', 'button'); w.setAttribute('tabindex', '0'); w.setAttribute('aria-expanded', 'false'); w.setAttribute('data-tw', String(x[2]));
+      w.className = TYEL[TALL[x[2]].w] ? 'tw ty' : 'tw'; w.setAttribute('role', 'button'); w.setAttribute('tabindex', '0'); w.setAttribute('aria-expanded', 'false'); w.setAttribute('data-tw', String(x[2]));
       w.textContent = s.slice(x[0], x[1]);
       f.appendChild(w); last = x[1];
     });
