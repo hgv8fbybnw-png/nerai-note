@@ -196,6 +196,16 @@ body.tipon .fab{opacity:0;pointer-events:none}
 .tip .dai-in h5{margin:8px 0 1px;font-size:13.5px;font-weight:700;color:var(--ink)}
 .tip .dai-in p{padding-left:1em;text-indent:-1em}
 .tip .dai-in p::before{content:'・'}
+/* 版13：天井は「色つきの見出し＋値」の行。リセット＝橙・通常＝緑・特別条件＝紫・〜後＝青 */
+.tip .dai-in .cr{display:flex;align-items:flex-start;gap:8px;margin:6px 0}
+.tip .dai-in .ck{flex:none;width:8.8em;box-sizing:border-box;text-align:center;font-size:11.5px;font-weight:700;line-height:1.45;padding:2px 3px;border-radius:6px;margin-top:1px}
+.tip .dai-in .cv{flex:1;min-width:0;overflow-wrap:anywhere}
+.tip .dai-in .cn{color:var(--sub)}
+.k-re{color:#c2410c;background:#fdeadb}
+.k-tu{color:#1f7a45;background:#e1f3e7}
+.k-sp{color:#6d28d9;background:#efe7fd}
+.k-af{color:#1d64a8;background:#e2edf9}
+.k-ot{color:#555;background:#eee}
 </style>
 </head>
 <body>
@@ -553,8 +563,14 @@ function daiMark(card) {
 }
 function daiHtml(m) {
   function p(x) { return '<p>' + esc(x) + '</p>'; }
+  function cr(x) {
+    if (!Array.isArray(x)) return p(x);
+    var k = String(x[0]), v = String(x[1] == null ? '' : x[1]);
+    var c = /^(リセット|朝一)/.test(k) ? 're' : /特別|短縮/.test(k) ? 'sp' : /後/.test(k) ? 'af' : /通常/.test(k) ? 'tu' : 'ot';
+    return '<div class="cr"><span class="ck k-' + c + '">' + esc(k) + '</span><span class="cv' + (v === 'なし' ? ' cn' : '') + '">' + esc(v) + '</span></div>';
+  }
   var h = '<div class="dai-in">';
-  if (m.c && m.c.length) h += '<h4>天井</h4>' + m.c.map(p).join('');
+  if (m.c && m.c.length) h += '<h4>天井</h4>' + m.c.map(cr).join('');
   if (m.s && m.s.length) h += '<h4>示唆のタイミング</h4>' + m.s.map(function (x) { return (x.h ? '<h5>' + esc(x.h) + '</h5>' : '') + (x.t || []).map(p).join(''); }).join('');
   return h + '</div>';
 }
