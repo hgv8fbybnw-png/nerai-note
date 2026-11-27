@@ -21,7 +21,8 @@
    版7：投稿の文の中の 差枚・MY・有利区間・有利区間切断・リセット は「？」でなく青い字にし、押すと用語集のその説明へ飛ぶ（2026-11-25）
    版8：用語集の差枚とMYに、オーナーが送ったグラフの画像（本日・−1500枚まで下がって＋2000枚）を使った図と説明を入れた（2026-11-25）
    版9：用語集の有利区間と有利区間切断に、グラフの道具で数字から作ったグラフの図と説明を入れた（2026-11-25）
-   版10：3本線を上の帯の左はしへ。用語集のリセットに、オーナーが撮った BB 0・RB 0 の表記の写真（切り取り・位置情報なし）を入れた（2026-11-25） */
+   版10：3本線を上の帯の左はしへ。用語集のリセットに、オーナーが撮った BB 0・RB 0 の表記の写真（切り取り・位置情報なし）を入れた（2026-11-25）
+   版11：「？」と点線をやめ、色だけにした。吹き出しだけの16語は薄めの青、用語集へ飛ぶ5つは薄めの赤（2026-11-27） */
 :root{
   --bg:#eef0f3; --card:#fff; --line:#e3e5e9; --ink:#1f2328; --sub:#8b9099; --link:#3d6ee0;
   --head:#fff; --chip:#f2f3f5; --dark:#000;
@@ -164,7 +165,8 @@ textarea.fi.big{min-height:11em}
 .term .ex{background:#f4f5f7;border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.6;color:#444;margin:6px 0 2px}
 .term{transition:background-color .6s}
 .term.hit{background:#eaf0fd}
-.gl{color:var(--link);cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none}
+/* 版11（オーナー「？マーク邪魔だから色変えるだけに変更して。ポップアップのみのものを青（薄め）、説明に飛ぶものは赤（薄め）」） */
+.gl{color:#e0605e;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none}
 .gfig{margin:8px 0 8px}
 .gfig svg{display:block;width:100%;height:auto;border-radius:10px}
 .gfig figcaption{font-size:13px;line-height:1.6;color:#444;margin-top:6px}
@@ -176,9 +178,8 @@ textarea.fi.big{min-height:11em}
 
 /* 用語の「？」と吹き出し（版5・2026-11-25。オーナーが見本を見て「この形で作る」）。
    四角は出さない：言葉の枠・押したときの灰色（tap-highlight）・吹き出しの枠線はなし。吹き出しは角の丸い面と、言葉を指す小さな三角 */
-.tw{cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none;border-bottom:1px dotted var(--link);-webkit-user-select:none;user-select:none}
-.tw .q{display:inline-block;width:15px;height:15px;margin-left:2px;border-radius:50%;background:#eaf0fd;color:var(--link);font-size:11px;font-weight:700;font-style:normal;line-height:15px;text-align:center;vertical-align:2px;white-space:normal}
-.tw[aria-expanded="true"] .q{background:var(--link);color:#fff}
+.tw{color:#4f95e8;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none;-webkit-user-select:none;user-select:none}
+.tw[aria-expanded="true"]{color:#2f6fd0}
 .tip{position:absolute;z-index:4;background:#fff;color:var(--ink);border-radius:16px;padding:12px 44px 12px 14px;font-size:14px;font-weight:400;line-height:1.6;text-align:left;
   box-shadow:0 8px 24px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.1)}
 .tip b{display:block;font-size:15px;font-weight:700;margin-bottom:2px;overflow-wrap:anywhere}
@@ -446,7 +447,6 @@ function tipMark(root) {
       }
       w.className = 'tw'; w.setAttribute('role', 'button'); w.setAttribute('tabindex', '0'); w.setAttribute('aria-expanded', 'false'); w.setAttribute('data-tw', String(x[2]));
       w.textContent = s.slice(x[0], x[1]);
-      w.insertAdjacentHTML('beforeend', '<span class="q" aria-hidden="true">?</span>');
       f.appendChild(w); last = x[1];
     });
     f.appendChild(document.createTextNode(s.slice(last)));
