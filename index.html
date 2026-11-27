@@ -22,7 +22,8 @@
    版8：用語集の差枚とMYに、オーナーが送ったグラフの画像（本日・−1500枚まで下がって＋2000枚）を使った図と説明を入れた（2026-11-25）
    版9：用語集の有利区間と有利区間切断に、グラフの道具で数字から作ったグラフの図と説明を入れた（2026-11-25）
    版10：3本線を上の帯の左はしへ。用語集のリセットに、オーナーが撮った BB 0・RB 0 の表記の写真（切り取り・位置情報なし）を入れた（2026-11-25）
-   版11：「？」と点線をやめ、色だけにした。吹き出しだけの16語は薄めの青、用語集へ飛ぶ5つは薄めの赤（2026-11-27） */
+   版11：「？」と点線をやめ、色だけにした。吹き出しだけの16語は薄めの青、用語集へ飛ぶ5つは薄めの赤（2026-11-27）
+   版12：投稿の頭の台の名前を薄めの緑にし、押すと台の説明（天井と、G数に関わる示唆のタイミング）の吹き出し。説明は合言葉の奥の「_台の情報」（2026-11-27） */
 :root{
   --bg:#eef0f3; --card:#fff; --line:#e3e5e9; --ink:#1f2328; --sub:#8b9099; --link:#3d6ee0;
   --head:#fff; --chip:#f2f3f5; --dark:#000;
@@ -186,6 +187,15 @@ textarea.fi.big{min-height:11em}
 .tip p{margin:0;overflow-wrap:anywhere}
 .tip-x{position:absolute;top:2px;right:2px;width:44px;height:44px;color:var(--sub);font-size:22px;line-height:1;outline:none;-webkit-tap-highlight-color:transparent}
 .tip-t{position:absolute;width:12px;height:12px;background:#fff;transform:rotate(45deg)}
+/* 版12：台の名前は薄めの緑。押すと台の説明（天井と、G数に関わる示唆のタイミング）の吹き出し。長いときは吹き出しの中だけ動く */
+.dai{color:#3daa68;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none;-webkit-user-select:none;user-select:none}
+.dai[aria-expanded="true"]{color:#2a8a50}
+body.tipon .fab{opacity:0;pointer-events:none}
+.tip .dai-in{max-height:min(62vh,560px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.tip .dai-in h4{margin:10px 0 2px;font-size:13px;font-weight:700;color:#2a8a50}
+.tip .dai-in h5{margin:8px 0 1px;font-size:13.5px;font-weight:700;color:var(--ink)}
+.tip .dai-in p{padding-left:1em;text-indent:-1em}
+.tip .dai-in p::before{content:'・'}
 </style>
 </head>
 <body>
@@ -307,6 +317,7 @@ try { S.tb = JSON.parse(ls('tb') || '[]'); } catch (e) { S.tb = []; }
 function keep(r) {
   S.posts = r.posts || []; S.v = r.v || ''; S.tb = r.tb || [];
   try { ls('posts', JSON.stringify(S.posts)); ls('v', S.v); ls('tb', JSON.stringify(S.tb)); } catch (e) {}
+  daiLoad();
 }
 
 /* ---------- 受け口とのやりとり ---------- */
@@ -328,7 +339,7 @@ function refresh(force) {
       return;
     }
     S.w = !!r.w; ls('w', S.w ? '1' : '0'); fabShow();
-    if (r.same) { if (force) toast('最新です'); return; }
+    if (r.same) { daiLoad(); if (force) toast('最新です'); return; }
     keep(r);
     render();
     if (force) toast('最新にしました');
@@ -423,7 +434,7 @@ function tipMark(root) {
   var used = {}, nodes = [];
   root.querySelectorAll('.tt').forEach(function (el) {
     var walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), n;
-    while ((n = walk.nextNode())) if (n.nodeValue.trim() && !n.parentElement.closest('a, button, .tw, .gl')) nodes.push(n);
+    while ((n = walk.nextNode())) if (n.nodeValue.trim() && !n.parentElement.closest('a, button, .tw, .gl, .dai')) nodes.push(n);
   });
   nodes.forEach(function (node) {
     var s = node.nodeValue, hit = [], m, T = tipRe(), re = T.re;
@@ -454,14 +465,14 @@ function tipMark(root) {
   });
 }
 var tipOpen = null;   /* {el 吹き出し, w 押した言葉} */
-function tipClose() { if (tipOpen) { tipOpen.el.remove(); tipOpen.w.setAttribute('aria-expanded', 'false'); tipOpen = null; } }
+function tipClose() { if (tipOpen) { tipOpen.el.remove(); tipOpen.w.setAttribute('aria-expanded', 'false'); tipOpen = null; document.body.classList.remove('tipon'); } }
 function tipShow(w) {
-  var same = tipOpen && tipOpen.w === w, t = TERMS[+w.getAttribute('data-tw')];
+  var dai = w.hasAttribute('data-dai'), same = tipOpen && tipOpen.w === w, t = dai ? DAI && DAI.d[+w.getAttribute('data-dai')] : TERMS[+w.getAttribute('data-tw')];
   tipClose();
   if (same || !t) return;
-  var el = document.createElement('div');
-  el.className = 'tip'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', t.w);
-  el.innerHTML = '<i class="tip-t" aria-hidden="true"></i><b>' + esc(t.w) + '</b>' + t.d.map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('')
+  var el = document.createElement('div'), name = dai ? t.n : t.w;
+  el.className = 'tip'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', name);
+  el.innerHTML = '<i class="tip-t" aria-hidden="true"></i><b>' + esc(name) + '</b>' + (dai ? daiHtml(t) : t.d.map(function (x) { return '<p>' + esc(x) + '</p>'; }).join(''))
     + '<button type="button" class="tip-x" aria-label="閉じる">×</button>';
   document.body.appendChild(el);
   var c = (w.closest('.card') || $('list')).getBoundingClientRect(), r = w.getBoundingClientRect(), x0 = c.left + 8, wd = Math.max(200, c.width - 16);
@@ -471,7 +482,7 @@ function tipShow(w) {
   el.style.top = ((up ? r.top - 10 - h : r.bottom + 10) + window.scrollY) + 'px';
   var tl = el.querySelector('.tip-t');
   tl.style.left = Math.min(Math.max(r.left + r.width / 2 - x0 - 6, 14), wd - 26) + 'px'; tl.style[up ? 'bottom' : 'top'] = '-6px';
-  w.setAttribute('aria-expanded', 'true'); tipOpen = { el: el, w: w };
+  w.setAttribute('aria-expanded', 'true'); tipOpen = { el: el, w: w }; document.body.classList.add('tipon');
   if (!up) { var b = el.getBoundingClientRect().bottom; if (b > floor - 8) window.scrollBy(0, b - floor + 16); }
 }
 document.addEventListener('click', function (e) {
@@ -479,18 +490,92 @@ document.addEventListener('click', function (e) {
   if (e.target.closest('.tip')) return;
   var g = e.target.closest('.gl[data-gl]');
   if (g) { tipClose(); goGloss(g.getAttribute('data-gl')); return; }
-  var w = e.target.closest('.tw[data-tw]');
+  var w = e.target.closest('.tw[data-tw], .dai[data-dai]');
   if (w) { tipShow(w); return; }
   if (tipOpen) tipClose();
 });
 document.addEventListener('keydown', function (e) {
-  var w = e.target.closest && e.target.closest('.tw[data-tw]'), g = e.target.closest && e.target.closest('.gl[data-gl]');
+  var w = e.target.closest && e.target.closest('.tw[data-tw], .dai[data-dai]'), g = e.target.closest && e.target.closest('.gl[data-gl]');
   if (g && e.key === 'Enter') { e.preventDefault(); goGloss(g.getAttribute('data-gl')); }
   else if (w && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); tipShow(w); }
   else if (e.key === 'Escape') tipClose();
 });
 var tipWidth = window.innerWidth;
 window.addEventListener('resize', function () { if (window.innerWidth !== tipWidth) { tipWidth = window.innerWidth; tipClose(); } });
+
+/* 版12：台の名前を緑にし、押すと台の説明の吹き出し（オーナー「台それぞれの情報をポップアップで見えるようにしたい。台の名前を同じようにして緑で。
+   内容は天井情報と、設定ではなくモードや天井などのG数に関わる示唆のタイミング」）。
+   説明は合言葉の奥にしまう（期待値表と同じ置き場の「_台の情報」。gzip した JSON：{d:[{n:台名, al:[呼び名], c:[天井の行], s:[{h:いつ, t:[行]}]}]}）。
+   つけるのは投稿の頭（台名の欄。なければ内容の最初の行）に出た台の名前だけ。空白のちがいと英字の大小は見ない */
+var DAI_N = '_台の情報', DAI = null, DAI_RE = null;
+try { DAI = JSON.parse(ls('dai') || 'null'); } catch (e) { DAI = null; }
+function daiRe() {
+  if (DAI_RE || !DAI || !DAI.d) return DAI_RE;
+  var alts = [];
+  DAI.d.forEach(function (m, i) {
+    (m.al && m.al.length ? m.al : [m.n]).forEach(function (a) {
+      a = String(a).replace(/[\s　]+/g, '');
+      if (a) alts.push({ src: a.split('').map(reEsc).join('[\\s\\u3000]*'), i: i, n: a.length });
+    });
+  });
+  if (!alts.length) return null;
+  alts.sort(function (a, b) { return b.n - a.n; });
+  DAI_RE = { alts: alts, re: new RegExp(alts.map(function (a) { return '(' + a.src + ')'; }).join('|'), 'i') };
+  return DAI_RE;
+}
+function daiMark(card) {
+  var R = daiRe(), t = card.querySelector('.body .nm') || card.querySelector('.body .tx');
+  if (!R || !t) return;
+  var walk = document.createTreeWalker(t, NodeFilter.SHOW_TEXT, null), n, started = false;
+  while ((n = walk.nextNode())) {
+    if (n.parentElement.closest('a, button')) { started = true; continue; }
+    var s = n.nodeValue, pos = 0;
+    while (true) {
+      var nl = s.indexOf('\n', pos), seg = nl < 0 ? s.slice(pos) : s.slice(pos, nl);
+      if (seg.trim()) {
+        started = true;
+        var m = R.re.exec(seg);
+        if (m) {
+          var k = 1; while (m[k] === undefined) k++;
+          var at = pos + m.index, w = document.createElement('span'), f = document.createDocumentFragment();
+          w.className = 'dai'; w.setAttribute('role', 'button'); w.setAttribute('tabindex', '0'); w.setAttribute('aria-expanded', 'false');
+          w.setAttribute('data-dai', String(R.alts[k - 1].i)); w.textContent = m[0];
+          f.appendChild(document.createTextNode(s.slice(0, at))); f.appendChild(w); f.appendChild(document.createTextNode(s.slice(at + m[0].length)));
+          n.parentNode.replaceChild(f, n);
+          return;
+        }
+      }
+      if (nl < 0) break;
+      if (started) return;
+      pos = nl + 1;
+    }
+  }
+}
+function daiHtml(m) {
+  function p(x) { return '<p>' + esc(x) + '</p>'; }
+  var h = '<div class="dai-in">';
+  if (m.c && m.c.length) h += '<h4>天井</h4>' + m.c.map(p).join('');
+  if (m.s && m.s.length) h += '<h4>示唆のタイミング</h4>' + m.s.map(function (x) { return (x.h ? '<h5>' + esc(x.h) + '</h5>' : '') + (x.t || []).map(p).join(''); }).join('');
+  return h + '</div>';
+}
+/* 一覧に「_台の情報」があり、手元の控えと日時がちがうときだけ取りに行く */
+function daiLoad() {
+  var x = null;
+  S.tb.forEach(function (t) { if (t.n === DAI_N) x = t; });
+  if (!x) { if (DAI) { DAI = null; DAI_RE = null; ls('dai', null); render(); } return; }
+  if (DAI && DAI.at === x.at) return;
+  var raw = !('DecompressionStream' in window);
+  call({ a: 'hyou', k: S.key, name: DAI_N, raw: raw ? 1 : 0 }).then(function (r) {
+    if (!r.ok) return;
+    return (r.h ? Promise.resolve(r.h) : gunzip(r.d)).then(function (s) {
+      var d = JSON.parse(s);
+      if (!d || !Array.isArray(d.d)) return;
+      DAI = { at: r.at, d: d.d }; DAI_RE = null;
+      try { ls('dai', JSON.stringify(DAI)); } catch (e) {}
+      render();
+    });
+  }).catch(function () {});
+}
 
 /* ---------- 一覧 ---------- */
 function render() {
@@ -547,6 +632,7 @@ function card(p) {
   if (b) h += '<div class="body clamp">' + b + '</div><button class="more" data-act="more">…もっと見る</button>';
   h += '<div class="foot"></div>';
   a.innerHTML = h;
+  daiMark(a);
   tipMark(a);
   return a;
 }
@@ -883,7 +969,7 @@ function openCompose(p) {
   var f = p ? fields(p) : {};
   F.forEach(function (x) { $('f_' + x[0]).value = f[x[0]] || ''; });
   /* ツールリンクの下に、上がっている期待値表をえらんで足す欄（版3） */
-  var tb = S.tb.slice().sort(function (a, b) { return String(a.t || a.n).localeCompare(String(b.t || b.n), 'ja'); });
+  var tb = S.tb.filter(function (x) { return String(x.n).charAt(0) !== '_'; }).sort(function (a, b) { return String(a.t || a.n).localeCompare(String(b.t || b.n), 'ja'); });
   $('f_tpick').innerHTML = '<option value="">＋ 期待値表を足す</option>' + tb.map(function (x) { return '<option value="' + esc(x.n) + '">' + esc(x.t || x.n) + '</option>'; }).join('');
   $('f_tpick').classList.toggle('hide', !tb.length);
   strip();
