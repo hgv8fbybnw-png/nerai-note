@@ -206,6 +206,12 @@ body.tipon .fab{opacity:0;pointer-events:none}
 .k-sp{color:#6d28d9;background:#efe7fd}
 .k-af{color:#1d64a8;background:#e2edf9}
 .k-ot{color:#555;background:#eee}
+/* 版14：吹き出しの文は言葉のまとまり（.w）ごとに改行する。見出しの札は1行のまま */
+.tip .w{display:inline-block;max-width:100%;text-indent:0}
+.tip .dai-in{margin-right:-32px}
+.tip .dai-in .cl{display:block}
+.tip .dai-in .cnote{display:block;color:var(--sub);font-size:13px;line-height:1.5}
+.tip .dai-in .ck{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -382,6 +388,30 @@ $('lockForm').addEventListener('submit', function (e) {
 
 /* ---------- 見た目のための小さな道具 ---------- */
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+/* 版14：吹き出しの文を言葉のまとまりに分け、改行はまとまりの間でだけ起きるようにする（言葉の途中で切らない）。
+   切れ目：空白（数字の前の空白はつなぐ）・「・／、。：）→」のあと・「（」の前・ひらがなのあとに漢字やカタカナや英数字が来る所
+   （ひらがな1字のときは「の・で・を」などの助詞だけ。振り分け・引き戻しのような送りがなでは切らない。「の後」「た時」も切らない。
+   12字までの（ ）「 」は中で切らない） */
+function wj(s) {
+  var a = Array.from(String(s)), out = [], cur = '';
+  function push() { if (cur) { out.push('<span class="w">' + esc(cur) + '</span>'); cur = ''; } }
+  for (var i = 0; i < a.length; i++) {
+    var c = a[i];
+    if (c === ' ' || c === '　') { if (/[0-9０-９]/.test(a[i + 1] || '') && cur) { cur += ' '; continue; } push(); out.push(' '); continue; }
+    if (c === '（' || c === '(' || c === '「') {
+      if (cur) { push(); out.push('<wbr>'); }
+      var e = { '（': '）', '(': ')', '「': '」' }[c], k = a.indexOf(e, i + 1);
+      if (k > 0 && k - i <= 12) { cur += a.slice(i, k).join(''); i = k; c = a[i]; }
+    }
+    cur += c;
+    var n = a[i + 1] || '';
+    if (!n || n === ' ' || n === '　') continue;
+    if ((/[・／、。：，）)」→]/.test(c) && !/[・／、。：，）)」]/.test(n)) ||
+        (/[ぁ-ゟ]/.test(c) && /[゠-ヿ一-鿿A-Za-z0-9０-９Ａ-Ｚａ-ｚ]/.test(n) && !/[後時中前際内]/.test(n) && (/[のでをにはがともへやか]/.test(c) || /[ぁ-ゟ]/.test(a[i - 1] || '')))) { push(); out.push('<wbr>'); }
+  }
+  push();
+  return out.join('');
+}
 function linkify(s) {
   return esc(s).replace(/https?:\/\/[^\s<>"']+/g, function (u) { return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + '</a>'; });
 }
@@ -482,7 +512,7 @@ function tipShow(w) {
   if (same || !t) return;
   var el = document.createElement('div'), name = dai ? t.n : t.w;
   el.className = 'tip'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', name);
-  el.innerHTML = '<i class="tip-t" aria-hidden="true"></i><b>' + esc(name) + '</b>' + (dai ? daiHtml(t) : t.d.map(function (x) { return '<p>' + esc(x) + '</p>'; }).join(''))
+  el.innerHTML = '<i class="tip-t" aria-hidden="true"></i><b>' + esc(name) + '</b>' + (dai ? daiHtml(t) : t.d.map(function (x) { return '<p>' + wj(x) + '</p>'; }).join(''))
     + '<button type="button" class="tip-x" aria-label="閉じる">×</button>';
   document.body.appendChild(el);
   var c = (w.closest('.card') || $('list')).getBoundingClientRect(), r = w.getBoundingClientRect(), x0 = c.left + 8, wd = Math.max(200, c.width - 16);
@@ -562,16 +592,22 @@ function daiMark(card) {
   }
 }
 function daiHtml(m) {
-  function p(x) { return '<p>' + esc(x) + '</p>'; }
+  function p(x) { return '<p>' + wj(x) + '</p>'; }
   function cr(x) {
     if (!Array.isArray(x)) return p(x);
     var k = String(x[0]), v = String(x[1] == null ? '' : x[1]);
     var c = /^(リセット|朝一)/.test(k) ? 're' : /特別|短縮/.test(k) ? 'sp' : /後/.test(k) ? 'af' : /通常/.test(k) ? 'tu' : 'ot';
-    return '<div class="cr"><span class="ck k-' + c + '">' + esc(k) + '</span><span class="cv' + (v === 'なし' ? ' cn' : '') + '">' + esc(v) + '</span></div>';
+    return '<div class="cr"><span class="ck k-' + c + '">' + esc(k) + '</span><span class="cv' + (v === 'なし' ? ' cn' : '') + '">' + v.split('／').reduce(function (o, q) {
+      var j = q.indexOf('：');
+      return o.concat(j > 0 && j < q.length - 1 ? [q.slice(0, j + 1), q.slice(j + 1)] : [q]);
+    }, []).map(function (q) {
+      var mm = q.match(/^(.+?)（([^（）]*)）$/);
+      return '<span class="cl">' + (mm ? wj(mm[1]) + '<span class="cnote">' + wj('（' + mm[2] + '）') + '</span>' : wj(q)) + '</span>';
+    }).join('') + '</span></div>';
   }
   var h = '<div class="dai-in">';
   if (m.c && m.c.length) h += '<h4>天井</h4>' + m.c.map(cr).join('');
-  if (m.s && m.s.length) h += '<h4>示唆のタイミング</h4>' + m.s.map(function (x) { return (x.h ? '<h5>' + esc(x.h) + '</h5>' : '') + (x.t || []).map(p).join(''); }).join('');
+  if (m.s && m.s.length) h += '<h4>示唆のタイミング</h4>' + m.s.map(function (x) { return (x.h ? '<h5>' + wj(x.h) + '</h5>' : '') + (x.t || []).map(p).join(''); }).join('');
   return h + '</div>';
 }
 /* 一覧に「_台の情報」があり、手元の控えと日時がちがうときだけ取りに行く */
