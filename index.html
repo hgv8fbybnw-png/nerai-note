@@ -23,7 +23,8 @@
    版9：用語集の有利区間と有利区間切断に、グラフの道具で数字から作ったグラフの図と説明を入れた（2026-11-25）
    版10：3本線を上の帯の左はしへ。用語集のリセットに、オーナーが撮った BB 0・RB 0 の表記の写真（切り取り・位置情報なし）を入れた（2026-11-25）
    版11：「？」と点線をやめ、色だけにした。吹き出しだけの16語は薄めの青、用語集へ飛ぶ5つは薄めの赤（2026-11-27）
-   版12：投稿の頭の台の名前を薄めの緑にし、押すと台の説明（天井と、G数に関わる示唆のタイミング）の吹き出し。説明は合言葉の奥の「_台の情報」（2026-11-27） */
+   版12：投稿の頭の台の名前を薄めの緑にし、押すと台の説明（天井と、G数に関わる示唆のタイミング）の吹き出し。説明は合言葉の奥の「_台の情報」（2026-11-27）
+   版15：画像つきの言葉（レア役・AT・AT終了画面・アイキャッチ）は黄色にし、吹き出しに写真を出す（2026-11-27） */
 :root{
   --bg:#eef0f3; --card:#fff; --line:#e3e5e9; --ink:#1f2328; --sub:#8b9099; --link:#3d6ee0;
   --head:#fff; --chip:#f2f3f5; --dark:#000;
@@ -190,6 +191,12 @@ textarea.fi.big{min-height:11em}
 /* 版12：台の名前は薄めの緑。押すと台の説明（天井と、G数に関わる示唆のタイミング）の吹き出し。長いときは吹き出しの中だけ動く */
 .dai{color:#3daa68;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none;-webkit-user-select:none;user-select:none}
 .dai[aria-expanded="true"]{color:#2a8a50}
+/* 版15：画像つきの言葉は黄色（からし色。白の上でも読めるよう濃いめ）。吹き出しの写真は横いっぱい */
+.tw.ty{color:#d29e00}
+.tw.ty[aria-expanded="true"]{color:#a87e00}
+.tip .timg{margin:6px -32px 6px 0}
+.tip .timg img{display:block;width:100%;height:auto;border-radius:10px;background:#f2f3f5}
+.tip .timg figcaption{font-size:12px;color:var(--sub);margin-top:3px}
 body.tipon .fab{opacity:0;pointer-events:none}
 .tip .dai-in{max-height:min(62vh,560px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .tip .dai-in h4{margin:10px 0 2px;font-size:13px;font-weight:700;color:#2a8a50}
@@ -446,6 +453,22 @@ function norm(s) {
    押すと言葉の下（入らなければ上）に吹き出し。もう一度押す・ほかを押す・×で閉じる。横幅が変わったときも閉じる
    （iPhone は上下に動かすだけで高さが変わるので、高さでは閉じない） */
 var TERMS = [{"w":"通常時","d":["ボーナスやATなどの特別な状態じゃない事を指します、メダルを消費して当たり状態を目指す基本の状態です。"]},{"w":"レア役","d":["遊戯中に中々出ない子役の事を指します、主にスイカ、チェリー、チャンス目のように台によって設計されています。"]},{"w":"前兆","d":["CZやボーナスの当たりが近付いている、またはすでに当たっている可能性が高い事を知らせる演出状態の事を指します。主にガセ前兆と本前兆の２つ"]},{"w":"天井","d":["通常時に設けられている救済措置、大体の台には天井ゲーム数が設定されており、そこでBBやATなどに必ず当たってくれる仕組み"]},{"w":"CZ","d":["チャンスゾーンの略、主に通常時はCZを目指してそこからBBやATへの当選を抽選している事が多いです。"]},{"w":"BB","d":["ビッグボーナスの略、台によってはメインの当たりとして搭載されている事が多い、BB→ATというルートもあります。"]},{"w":"RB","d":["レギュラーボーナスの略、BBが搭載されている台の残念な方として用意されている事が多いです。","レグ、バケなどの言い方もします。"]},{"w":"AT","d":["アシストタイムの略、メインの大当たり状態を指す事が多く、メダルを増やすチャンスの状態です。"]},{"w":"スルー/何スルー","d":["主にメインの当たり(ATなど)を目指す際にCZやボーナスを外した時に使います、「3回連続でCZを外したからこの台は今3スルーだ」"]},{"w":"◯◯間","d":["CZやATなどのハマりゲーム数を表す時に使います、\"AT間天井\"が設定されてる台などで使う事が多いです。","「この台は前回CZが500Gでスルーしていて当該ゲーム数が100Gだから\"AT間\"が600Gだ」"]},{"w":"単発","d":["その台のメインの当たり(ATやSTなど)で1度も連チャン出来ずに終わってしまった状態の事を指す。"]},{"w":"駆け抜け","d":["1度も上乗せや連チャンを出来ずに終わった状態の事を指す、基本的に単発とほぼ同じ意味です。"]},{"w":"上位AT","d":["通常のATよりも性能が大幅に強化され、出玉を増やす大チャンスの状態です。"]},{"w":"アイキャッチ","d":["ステージの切り替わりやAT終了時などに出現する1枚目や演出を指します。主に内部モードや規定ゲーム数の示唆をしている事が多い。"]},{"w":"モード","d":["通常時にATやCZの当たりやすさを内部的に決めるシステムです、主に通常A/通常B/天国などの種類があります。"]},{"w":"規定ゲーム数","d":["天井とは別に、ATやCZの当選率が高くなる特定のゲーム数や状態の事を指します、\"ゾーン\"と呼ぶ事が多いです。"]}];
+/* 版15：画像つきの言葉（オーナー「次は駆け抜け表記とか、特別条件の見分け方など画像を添付していくよ」「色は黄色ね」）。
+   TIMG：言葉 → [[画像, 横, 縦, 下の字], …]。画像は 画面/img/ に置き、吹き出しを開いた時だけ読む（横・縦を書いておくと、読む前から場所が決まる）。
+   TERMS にない言葉は TERMS_X に足す（al はほかの書き方。「終了画面」だけの投稿が多いため） */
+var TERMS_X = [{ "w": "AT終了画面", "al": ["終了画面"], "d": ["ATが終わった時に出る画面（獲得枚数が出る）"] }];
+var TALL = TERMS.concat(TERMS_X);
+var TIMG = {
+  "レア役": [["img/rea.jpg", 720, 392, "東京喰種の例"]],
+  "AT": [["img/at.jpg", 720, 696, "東京喰種の例"]],
+  "AT終了画面": [["img/atend.jpg", 720, 595, "東京喰種の例"]],
+  "アイキャッチ": [["img/eye.jpg", 720, 312, "東京喰種の例"]]
+};
+function timgHtml(w) {
+  return (TIMG[w] || []).map(function (x) {
+    return '<figure class="timg"><img src="' + x[0] + '" width="' + x[1] + '" height="' + x[2] + '" alt="' + esc(w) + '"><figcaption>' + esc(x[3]) + '</figcaption></figure>';
+  }).join('');
+}
 var TIPK = 'paby';
 function reEsc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 /* 版7：用語集の新しい5つ（GLOSS_NEW）は「？」でなく青い字（.gl）。押すと用語集のその説明へ飛ぶ（オーナー「この５つは？ではなく青文字みたいにして押したら説明ページに飛べるようにして欲しい」）。
@@ -455,8 +478,8 @@ var TIP = null;
 function tipRe() {
   if (TIP) return TIP;
   var alts = [];
-  TERMS.forEach(function (t, i) {
-    t.w.split('/').forEach(function (a) {
+  TALL.forEach(function (t, i) {
+    t.w.split('/').concat(t.al || []).forEach(function (a) {
       a = a.trim(); if (!a) return;
       var wild = a.indexOf('◯◯') >= 0;
       alts.push({ src: wild ? a.split('◯◯').map(reEsc).join('(?:[A-Za-z]{2,5}|ボーナス)') : reEsc(a), i: i, g: '', ascii: /^[A-Za-z]+$/.test(a), n: wild ? 99 : a.length });
@@ -496,7 +519,7 @@ function tipMark(root) {
         w.textContent = s.slice(x[0], x[1]);
         f.appendChild(w); last = x[1]; return;
       }
-      w.className = 'tw'; w.setAttribute('role', 'button'); w.setAttribute('tabindex', '0'); w.setAttribute('aria-expanded', 'false'); w.setAttribute('data-tw', String(x[2]));
+      w.className = TIMG[TALL[x[2]].w] ? 'tw ty' : 'tw'; w.setAttribute('role', 'button'); w.setAttribute('tabindex', '0'); w.setAttribute('aria-expanded', 'false'); w.setAttribute('data-tw', String(x[2]));
       w.textContent = s.slice(x[0], x[1]);
       f.appendChild(w); last = x[1];
     });
@@ -507,12 +530,12 @@ function tipMark(root) {
 var tipOpen = null;   /* {el 吹き出し, w 押した言葉} */
 function tipClose() { if (tipOpen) { tipOpen.el.remove(); tipOpen.w.setAttribute('aria-expanded', 'false'); tipOpen = null; document.body.classList.remove('tipon'); } }
 function tipShow(w) {
-  var dai = w.hasAttribute('data-dai'), same = tipOpen && tipOpen.w === w, t = dai ? DAI && DAI.d[+w.getAttribute('data-dai')] : TERMS[+w.getAttribute('data-tw')];
+  var dai = w.hasAttribute('data-dai'), same = tipOpen && tipOpen.w === w, t = dai ? DAI && DAI.d[+w.getAttribute('data-dai')] : TALL[+w.getAttribute('data-tw')];
   tipClose();
   if (same || !t) return;
   var el = document.createElement('div'), name = dai ? t.n : t.w;
   el.className = 'tip'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', name);
-  el.innerHTML = '<i class="tip-t" aria-hidden="true"></i><b>' + esc(name) + '</b>' + (dai ? daiHtml(t) : t.d.map(function (x) { return '<p>' + wj(x) + '</p>'; }).join(''))
+  el.innerHTML = '<i class="tip-t" aria-hidden="true"></i><b>' + esc(name) + '</b>' + (dai ? daiHtml(t) : timgHtml(t.w) + t.d.map(function (x) { return '<p>' + wj(x) + '</p>'; }).join(''))
     + '<button type="button" class="tip-x" aria-label="閉じる">×</button>';
   document.body.appendChild(el);
   var c = (w.closest('.card') || $('list')).getBoundingClientRect(), r = w.getBoundingClientRect(), x0 = c.left + 8, wd = Math.max(200, c.width - 16);
@@ -994,6 +1017,8 @@ function renderGloss() {
         var m = /^(.*?)、?(「.+」)$/.exec(l);
         if (!m) return '<p>' + esc(l) + '</p>';
         return (m[1] ? '<p>' + esc(m[1]) + '</p>' : '') + '<div class="ex">例：' + esc(m[2]) + '</div>';
+      }).join('') + (TIMG[w] || []).map(function (x) {   /* 版15：画像つきの言葉は用語集にも同じ写真 */
+        return '<figure class="gphoto"><img src="' + x[0] + '" width="' + x[1] + '" height="' + x[2] + '" alt="' + esc(w) + '" loading="lazy" decoding="async"><figcaption>' + esc(x[3]) + '</figcaption></figure>';
       }).join('') + '</div>';
     }).join('');
   }).join('');
