@@ -27,7 +27,8 @@
    版15：画像つきの言葉（レア役・AT・AT終了画面・アイキャッチ）は黄色にし、吹き出しに写真を出す（2026-11-27）
    版16：「示唆」を青い言葉にし、説明の下に例として AT終了画面 の写真。用語集にも足した（2026-11-27）
    版17：用語集の文も、吹き出しと同じく言葉のまとまりの間でだけ改行する（2026-11-27）
-   版18：版15の4語（レア役・AT・AT終了画面・アイキャッチ）は青に戻す（写真はそのまま）。黄色はこのあと送られる言葉から（2026-11-27） */
+   版18：版15の4語（レア役・AT・AT終了画面・アイキャッチ）は青に戻す（写真はそのまま）。黄色はこのあと送られる言葉から（2026-11-27）
+   版19：台ごとの黄色の言葉（TPOST）。その投稿の中の言葉だけを黄色にし、押すとグラフの道具で作った画像と説明。1つめは聖闘士星矢黄金十二宮の「上位後」（2026-11-28） */
 :root{
   --bg:#eef0f3; --card:#fff; --line:#e3e5e9; --ink:#1f2328; --sub:#8b9099; --link:#3d6ee0;
   --head:#fff; --chip:#f2f3f5; --dark:#000;
@@ -468,7 +469,14 @@ var TERMS_X = [
   { "w": "示唆", "one": "台の中の見えない状態を、演出でこっそり教えてくれること", "d": ["モード・天井までのゲーム数・設定など、台の中の見えない状態を、演出でこっそり教えてくれる事を指します。", "AT終了画面・ボイス・アイキャッチなどに出る事が多く、どこで何が分かるかは台によって違います。"],
     "pic": [["img/atend.jpg", 720, 595, "例：AT終了画面（東京喰種）"]] }
 ];
-var TALL = TERMS.concat(TERMS_X);
+/* 版19：台ごとの黄色の言葉（オーナー「その台の文面のところを僕が指定して」「用語とかと同じように黄色で説明を見れるように設計する」）。
+   post の投稿の中だけで色をつけ（いつも黄色）、用語集には出さない。画像はグラフの道具（06_データカウンター作成）で作った当選履歴に目印を足したもの
+   （作り方：台の情報/道具の控え/履歴の画像を作る.py）。説明の文はオーナーの言葉をもとにAIが書いた */
+var TPOST = [
+  { "post": "n004", "w": "上位後", "d": ["当選履歴で、ATの基本12連のすぐあとに 18〜19G のATがあれば、上位に入った印です。", "上位後は3周期天井です。"],
+    "pic": [["img/seiya_joui.png", 720, 538, "例：上位後の台の当選履歴（左が新しい）"]] }
+];
+var TALL = TERMS.concat(TERMS_X, TPOST);
 /* 版18：黄色にする言葉（オーナー「さっき黄色にしてっていったところは青でいいや」「次から送るものを黄色で」）。写真の有る無しとは別に決める */
 var TYEL = {};
 var TIMG = {
@@ -487,11 +495,13 @@ function reEsc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 /* 版7：用語集の新しい5つ（GLOSS_NEW）は「？」でなく青い字（.gl）。押すと用語集のその説明へ飛ぶ（オーナー「この５つは？ではなく青文字みたいにして押したら説明ページに飛べるようにして欲しい」）。
    「有利区間切れ」も有利区間切断へ飛ぶ（説明に「有利区間切れ」とも言う、とあるため）。リセ後はリセットとは別なのでつけない */
 var GL_ALIAS = { '有利区間切れ': '有利区間切断' };
-var TIP = null;
-function tipRe() {
-  if (TIP) return TIP;
+var TIP = {};   /* 版19：投稿ごと（台ごとの言葉がある投稿だけ別に作る） */
+function tipRe(pid) {
+  var key = TPOST.some(function (t) { return t.post === pid; }) ? pid : '';
+  if (TIP[key]) return TIP[key];
   var alts = [];
   TALL.forEach(function (t, i) {
+    if (t.post && t.post !== key) return;
     t.w.split('/').concat(t.al || []).forEach(function (a) {
       a = a.trim(); if (!a) return;
       var wild = a.indexOf('◯◯') >= 0;
@@ -503,17 +513,17 @@ function tipRe() {
     alts.push({ src: reEsc(a), i: 'g' + w, g: w, ascii: /^[A-Za-z]+$/.test(a), n: a.length });
   });
   alts.sort(function (a, b) { return b.n - a.n; });
-  TIP = { alts: alts, re: new RegExp(alts.map(function (a) { return '(' + a.src + ')'; }).join('|'), 'gi') };
-  return TIP;
+  TIP[key] = { alts: alts, re: new RegExp(alts.map(function (a) { return '(' + a.src + ')'; }).join('|'), 'gi') };
+  return TIP[key];
 }
 function tipMark(root) {
-  var used = {}, nodes = [];
+  var used = {}, nodes = [], pid = root.dataset ? root.dataset.id : '';
   root.querySelectorAll('.tt').forEach(function (el) {
     var walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), n;
     while ((n = walk.nextNode())) if (n.nodeValue.trim() && !n.parentElement.closest('a, button, .tw, .gl, .dai')) nodes.push(n);
   });
   nodes.forEach(function (node) {
-    var s = node.nodeValue, hit = [], m, T = tipRe(), re = T.re;
+    var s = node.nodeValue, hit = [], m, T = tipRe(pid), re = T.re;
     re.lastIndex = 0;
     while ((m = re.exec(s))) {
       var k = 1; while (m[k] === undefined) k++;
@@ -532,7 +542,7 @@ function tipMark(root) {
         w.textContent = s.slice(x[0], x[1]);
         f.appendChild(w); last = x[1]; return;
       }
-      w.className = TYEL[TALL[x[2]].w] ? 'tw ty' : 'tw'; w.setAttribute('role', 'button'); w.setAttribute('tabindex', '0'); w.setAttribute('aria-expanded', 'false'); w.setAttribute('data-tw', String(x[2]));
+      w.className = TYEL[TALL[x[2]].w] || TALL[x[2]].post ? 'tw ty' : 'tw'; w.setAttribute('role', 'button'); w.setAttribute('tabindex', '0'); w.setAttribute('aria-expanded', 'false'); w.setAttribute('data-tw', String(x[2]));
       w.textContent = s.slice(x[0], x[1]);
       f.appendChild(w); last = x[1];
     });
@@ -1019,7 +1029,7 @@ function goGloss(w) {
 }
 function renderGloss() {
   var by = {}, k = 0;
-  TALL.forEach(function (t) { by[t.w] = { one: GLOSS_ONE[t.w] || t.one || '', d: t.d, pic: t.pic }; });
+  TALL.forEach(function (t) { if (t.post) return; by[t.w] = { one: GLOSS_ONE[t.w] || t.one || '', d: t.d, pic: t.pic }; });
   Object.keys(GLOSS_NEW).forEach(function (w) { by[w] = GLOSS_NEW[w]; });
   $('termsV').innerHTML = GLOSS.map(function (g) {
     return '<div class="gh">' + esc(g[0]) + '</div>' + g[1].map(function (w) {
