@@ -28,7 +28,8 @@
    版16：「示唆」を青い言葉にし、説明の下に例として AT終了画面 の写真。用語集にも足した（2026-11-27）
    版17：用語集の文も、吹き出しと同じく言葉のまとまりの間でだけ改行する（2026-11-27）
    版18：版15の4語（レア役・AT・AT終了画面・アイキャッチ）は青に戻す（写真はそのまま）。黄色はこのあと送られる言葉から（2026-11-27）
-   版19：台ごとの黄色の言葉（TPOST）。その投稿の中の言葉だけを黄色にし、押すとグラフの道具で作った画像と説明。1つめは聖闘士星矢黄金十二宮の「上位後」（2026-11-28。画像はオーナーの「写真通りで」で見本の1段目と同じ数字に。「基本12連」はオーナーの言葉で「12連以上後」に）。2つめはゴッドイーターの「ハンニバル敗北後」（2026-11-28。印は137G・43枚のAT。オーナー「左から5個目137g43枚が表記だ」「現在1gを追加して完成」）。3つめはシャーマンキングの「pt計算」、4つめは牙狼 闇を照らす者の「SGB後」（2026-11-28。オーナー「RBからAT４連がラッシュ」で言い方をRBに）。5つめはとある魔術の禁書目録2の「画面右下g数が緑or赤」で、オーナーの写真を切り取って出す（説明の文なし）。6つめはゴジラ対エヴァンゲリオン2の「メニュー画面＝ゴジラ」のゴジラ、7つめはSAO2の「メニュー画面アイテム」のアイテム（どちらも写真だけ。SAO2の写真はオーナーの「アイテムこっち」で画面の左に出るアイテムに差しかえ）。8つめは吉宗真打の「上位後」（星矢と同じ言葉でも投稿ごとに分かれる。画像は当選履歴と差枚グラフの2枚。1200枚の線はオーナーの写真の書きこみどおり） */
+   版19：台ごとの黄色の言葉（TPOST）。その投稿の中の言葉だけを黄色にし、押すとグラフの道具で作った画像と説明。1つめは聖闘士星矢黄金十二宮の「上位後」（2026-11-28。画像はオーナーの「写真通りで」で見本の1段目と同じ数字に。「基本12連」はオーナーの言葉で「12連以上後」に）。2つめはゴッドイーターの「ハンニバル敗北後」（2026-11-28。印は137G・43枚のAT。オーナー「左から5個目137g43枚が表記だ」「現在1gを追加して完成」）。3つめはシャーマンキングの「pt計算」、4つめは牙狼 闇を照らす者の「SGB後」（2026-11-28。オーナー「RBからAT４連がラッシュ」で言い方をRBに）。5つめはとある魔術の禁書目録2の「画面右下g数が緑or赤」で、オーナーの写真を切り取って出す（説明の文なし）。6つめはゴジラ対エヴァンゲリオン2の「メニュー画面＝ゴジラ」のゴジラ、7つめはSAO2の「メニュー画面アイテム」のアイテム（どちらも写真だけ。SAO2の写真はオーナーの「アイテムこっち」で画面の左に出るアイテムに差しかえ）。8つめは吉宗真打の「上位後」（星矢と同じ言葉でも投稿ごとに分かれる。画像は当選履歴と差枚グラフの2枚。1200枚の線はオーナーの写真の書きこみどおり）
+   版20：3本線のタブの用語集の下に「グールポイント計算」（東京喰種の喰ptの数え方・数える道具・練習問題）。中身はノートの投稿「東京喰種　喰ptを考慮した狙い方」から。数え始めは0pt（オーナーが選んだ）（2026-11-28） */
 :root{
   --bg:#eef0f3; --card:#fff; --line:#e3e5e9; --ink:#1f2328; --sub:#8b9099; --link:#3d6ee0;
   --head:#fff; --chip:#f2f3f5; --dark:#000;
@@ -181,6 +182,38 @@ textarea.fi.big{min-height:11em}
 .gphoto.tall img{width:62%;margin:0 auto}
 .gphoto figcaption{font-size:13px;line-height:1.6;color:#444;margin-top:6px}
 .soon{text-align:center;color:var(--sub);padding:56px 16px;font-size:15px;line-height:1.8}
+/* 版20：グールポイント計算（数える道具・練習問題） */
+.gp{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin:0 0 8px}
+.gp-now{text-align:center;font-weight:800;font-size:56px;line-height:1.1;font-variant-numeric:tabular-nums}
+.gp-now small{font-size:20px;margin-left:3px}
+.gp-lv{text-align:center;font-size:15px;font-weight:700;margin:2px 0 12px}
+.gp-sc{display:grid;grid-template-columns:repeat(15,1fr);gap:3px}
+.gp-sc i{font-style:normal;text-align:center;font-size:11px;line-height:22px;border-radius:4px;background:#eceef1;color:#9aa1ab}
+.gp-sc i.z8{background:#fdeed6;color:#c98a2e}
+.gp-sc i.z9{background:#ffe2b0;color:#c06d00}
+.gp-sc i.z13{background:#e5ebf6;color:#7d93c0}
+.gp-sc i.on{background:#9aa1ab;color:#fff}
+.gp-sc i.on.z8{background:#f0a640}
+.gp-sc i.on.z9{background:#e8870e}
+.gp-sc i.on.z13{background:#7d93c0}
+.gp-key{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin:4px 1px 0}
+.gp-b{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.gp-b button{border-radius:10px;padding:13px 6px;font-size:15px;font-weight:700;background:#eaf0fd;color:var(--link);-webkit-tap-highlight-color:transparent}
+.gp-b button:active{background:#d5e1fb}
+.gp-b .wide{grid-column:1/-1}
+.gp-b .sub{background:var(--chip);color:var(--ink);font-weight:600;font-size:14px}
+.gp-log{font-size:13px;color:var(--sub);line-height:1.6;margin-top:10px;overflow-wrap:anywhere}
+.term ul{margin:2px 0 4px;padding-left:1.2em}
+.term li{font-size:14px;line-height:1.7;overflow-wrap:anywhere}
+.gq-n{font-size:12px;font-weight:700;color:var(--sub);margin-bottom:4px}
+.gq-s{display:flex;flex-wrap:wrap;align-items:center;gap:4px 4px;font-size:14px;line-height:1.5}
+.gq-s span{background:var(--chip);border-radius:6px;padding:2px 7px}
+.gq-s em{font-style:normal;color:var(--sub)}
+.gq-q{font-weight:700;margin:8px 0 0!important}
+.gq-btn{margin-top:8px;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:700;background:#eaf0fd;color:var(--link)}
+.gq-a{margin-top:8px;background:#f4f5f7;border-radius:8px;padding:8px 10px}
+.gq-a b{display:block;font-size:17px;margin-bottom:2px}
+.gq-a p{font-size:13px!important;color:#444;margin:0!important}
 
 /* 用語の「？」と吹き出し（版5・2026-11-25。オーナーが見本を見て「この形で作る」）。
    四角は出さない：言葉の枠・押したときの灰色（tap-highlight）・吹き出しの枠線はなし。吹き出しは角の丸い面と、言葉を指す小さな三角 */
@@ -220,7 +253,7 @@ body.tipon .fab{opacity:0;pointer-events:none}
 /* 版14：吹き出しの文は言葉のまとまり（.w）ごとに改行する。見出しの札は1行のまま */
 .tip .w{display:inline-block;max-width:100%;text-indent:0}
 /* 版17：用語集も同じ（オーナー「途中で文が途切れるのめっちゃ嫌い」） */
-#termsV .w{display:inline-block;max-width:100%}
+#termsV .w,#ghoulV .w{display:inline-block;max-width:100%}
 .tip .dai-in{margin-right:-32px}
 .tip .dai-in .cl{display:block}
 .tip .dai-in .cnote{display:block;color:var(--sub);font-size:13px;line-height:1.5}
@@ -250,6 +283,7 @@ body.tipon .fab{opacity:0;pointer-events:none}
 <main id="list"></main>
 <section class="view hide" id="memoV"></section>
 <section class="view hide" id="termsV"></section>
+<section class="view hide" id="ghoulV"></section>
 <section class="view hide" id="quizV"><div class="soon">問題集は準備中です。<br>できたら、ここに出ます。</div></section>
 <div class="tabs hide" id="tabs"><div class="tp"><div class="tp-in" id="tabList"></div></div></div>
 <button class="fab hide" id="fab" aria-label="書く">＋</button>
@@ -937,7 +971,7 @@ $('mKey').addEventListener('click', function () { $('menu').classList.add('hide'
 /* ---------- 3本線で切り替える（版6・2026-11-25） ----------
    オーナー「狙い目ノートと書いてあるところの右に3本線を用意してタブを切り替えられるようにして欲しい」。
    ノート・メモ（1人1人が自由に使える。このスマホの中だけに残り、ほかの人には見えない）・用語集・問題集（中身はこれから。オーナー「一旦ステイ」） */
-var TABS = [['note', 'ノート', 'みんなの狙い目のノート'], ['memo', 'メモ', '自分だけのメモ（このスマホの中だけ）'], ['terms', '用語集', 'スロットの言葉の意味'], ['quiz', '問題集', '準備中']];
+var TABS = [['note', 'ノート', 'みんなの狙い目のノート'], ['memo', 'メモ', '自分だけのメモ（このスマホの中だけ）'], ['terms', '用語集', 'スロットの言葉の意味'], ['ghoul', 'グールポイント計算', '東京喰種の喰ptの数え方と数える道具'], ['quiz', '問題集', '準備中']];
 var TAB = ls('tab') || 'note';
 if (!TABS.some(function (t) { return t[0] === TAB; })) TAB = 'note';
 function fabShow() { $('fab').classList.toggle('hide', !(S.w && TAB === 'note')); }
@@ -947,12 +981,14 @@ function setTab(t) {
   $('memoV').classList.toggle('hide', t !== 'memo');
   $('termsV').classList.toggle('hide', t !== 'terms');
   $('quizV').classList.toggle('hide', t !== 'quiz');
+  $('ghoulV').classList.toggle('hide', t !== 'ghoul');
   document.querySelector('.search').classList.toggle('hide', t !== 'note');
   $('count').classList.toggle('hide', t !== 'note' || !S.q);
   fabShow();
   $('ttl').textContent = t === 'note' ? '狙い目ノート' : TABS.filter(function (x) { return x[0] === t; })[0][1];
   if (t === 'memo') renderMemos();
   if (t === 'terms' && !$('termsV').firstChild) renderGloss();
+  if (t === 'ghoul' && !$('ghoulV').firstChild) renderGhoul();
   window.scrollTo(0, 0);
 }
 $('tabBtn').addEventListener('click', function () {
@@ -1060,6 +1096,85 @@ function renderGloss() {
     }).join('');
   }).join('');
 }
+
+/* ---------- 版20：グールポイント計算（オーナー「東京グールのpt計算を学べる場所を作りたい」「タブの用語集の下にグールポイント計算を作成」） ----------
+   中身はノートの投稿「東京喰種　喰ptを考慮した狙い方」の決まり。数え始めは0pt（オーナーが選んだ）。
+   入れるもの（オーナーが選んだ）：数え方の説明・ptを数える道具・当選履歴の例の画像（見本の写真が来てから）・練習問題。
+   道具の数えた記録は、このスマホの中だけに残す（メモと同じ） */
+var GP_EV = { cz: 'CZ失敗', at: 'AT駆け抜け', hk: '引き戻しのATが駆け抜け', r: '0に戻した' };
+function gpLoad() { try { var a = JSON.parse(ls('gp') || '[]'); return Array.isArray(a) ? a.filter(function (x) { return GP_EV[x]; }) : []; } catch (e) { return []; } }
+function gpZone(n) { return n >= 13 ? 'z13' : n >= 9 ? 'z9' : n === 8 ? 'z8' : ''; }
+function gpLevel(n) {
+  if (n >= 13) return ['13ptを超えると、解放しにくい', '#5f77a8'];
+  if (n >= 9) return ['9〜12pt：解放しやすい', '#c06d00'];
+  if (n === 8) return ['8pt：解放もある（狙い撃ちは8〜12pt）', '#b07a1e'];
+  return ['7pt以内：ほぼ解放しない', '#8b9099'];
+}
+function gpDraw() {
+  var ev = gpLoad(), k = ev.lastIndexOf('r'), cur = ev.slice(k + 1), n = cur.length, lv = gpLevel(n), sc = '';
+  for (var i = 1; i <= 15; i++) sc += '<i class="' + (gpZone(i) + (i <= n ? ' on' : '')).trim() + '">' + i + '</i>';
+  $('gpN').textContent = String(n);
+  $('gpLv').textContent = lv[0]; $('gpLv').style.color = lv[1];
+  $('gpSc').innerHTML = sc;
+  $('gpLog').textContent = cur.length ? '0ptから：' + cur.map(function (x) { return GP_EV[x]; }).join(' → ') : 'リセット後・解放後・切断後の 0pt から数えます';
+  $('gpUndo').disabled = !ev.length; $('gpUndo').style.opacity = ev.length ? '' : '.45';
+}
+var GQ = [
+  { s: ['リセット後', 'CZ失敗', 'CZ失敗', 'AT駆け抜け'], q: '今は何pt？', a: '3pt', w: 'リセット後は0ptから。CZ失敗で1pt・2pt、AT駆け抜けで3pt。' },
+  { s: ['喰pt解放後', 'AT駆け抜け', '引き戻しのATが駆け抜け', 'CZ失敗', 'CZ失敗'], q: '今は何pt？', a: '4pt', w: '解放後は0ptから。引き戻しのATが駆け抜けたときも1ptふえます。' },
+  { s: ['切断後', 'CZ失敗が5回', 'AT駆け抜けが3回', 'CZ失敗'], q: '今は何pt？', a: '9pt', w: '5＋3＋1で9pt。9〜12ptは解放しやすい所です。' },
+  { s: ['8ptでRUSHに入った', '1戦目の獲得枚数が90枚', 'CZ失敗', 'AT駆け抜け'], q: '今は何pt？', a: '10pt', w: '8ptで1戦目が60枚以上なので、解放ではないとみて8ptのまま。そのあと2つふえて10pt。' },
+  { s: ['10ptでRUSHに入った', '1戦目の獲得枚数が80枚'], q: '解放した？', a: '解放したとみなす（0ptから数え直す）', w: '9〜12ptは解放しやすい所なので、1戦目が100枚以下なら解放とみなします。' },
+  { s: ['7pt', 'CZ失敗', 'ATが11連以上した', 'CZ失敗'], q: '今は何pt？', a: '1pt', w: 'CZ失敗で8pt。ATが11連以上すると有利区間が切れるので0ptに戻り、そのあとのCZ失敗で1pt。' },
+  { s: ['11pt', 'CZ失敗', 'ptがふえる演出が出なかった'], q: 'どうする？', a: '次のATで解放確定とみて、不問で狙える', w: 'CZ失敗とAT駆け抜けのときは、かならずptがふえる演出が出ます。8〜12ptで出なかったら解放確定です。' }
+];
+function gpCard(h, body) { return '<div class="term"><h3>' + esc(h) + '</h3>' + body + '</div>'; }
+function gpP(a) { return a.map(function (l) { return '<p>' + wj(l) + '</p>'; }).join(''); }
+function gpUl(a) { return '<ul>' + a.map(function (l) { return '<li>' + wj(l) + '</li>'; }).join('') + '</ul>'; }
+function renderGhoul() {
+  $('ghoulV').innerHTML =
+    '<div class="hint">' + wj('東京喰種の喰pt（グールポイント）の数え方。もとはノートの投稿「東京喰種　喰ptを考慮した狙い方」です。') + '</div>' +
+    '<div class="gh">ptを数える道具</div>' +
+    '<div class="gp"><div class="gp-now"><span id="gpN">0</span><small>pt</small></div><div class="gp-lv" id="gpLv"></div>' +
+    '<div class="gp-sc" id="gpSc"></div><div class="gp-key"><span>〜7 ほぼ解放しない</span><span>9〜12 解放しやすい</span><span>13〜</span></div>' +
+    '<div class="gp-b"><button data-gp="cz">CZ失敗 ＋1</button><button data-gp="at">AT駆け抜け ＋1</button>' +
+    '<button class="wide" data-gp="hk">引き戻しのATが駆け抜け ＋1</button>' +
+    '<button class="sub" data-gp="undo" id="gpUndo">1つ戻す</button><button class="sub" data-gp="r">0に戻す</button></div>' +
+    '<div class="gp-log" id="gpLog"></div></div>' +
+    '<div class="hint">' + wj('「0に戻す」は、リセット・喰ptの解放・有利区間の切断のとき。数えた記録はこのスマホの中だけに残ります。') + '</div>' +
+    '<div class="gh">数え方</div>' +
+    gpCard('① 数え始め', gpP(['リセット後・喰ptの解放後・切断後は、0ptから数えます。'])) +
+    gpCard('② 1ptふえるとき', gpUl(['CZ失敗', 'AT駆け抜け', '引き戻しのATが駆け抜けたとき']) + gpP(['RUSHに入っても、解放でなければptはそのまま続けて数えます。'])) +
+    gpCard('③ 0ptに戻るとき（有利区間が切れる）', gpUl(['有利差枚がプラスの状態で、上位CZに入ったとき', 'ATが11連以上したとき（有利差枚がマイナスでも切れる）'])) +
+    '<div class="gh">解放しやすさ</div>' +
+    gpCard('ptと解放', gpUl(['7pt以内：ほぼ解放しない', '9〜12pt：解放しやすい', '13ptを超えると：とても解放しにくい']) + gpP(['解放すると、RUSHに入るときにBITESのストックがもらえるので強いです。'])) +
+    '<div class="gh">解放したかの見分け方</div>' +
+    gpCard('RUSHの1戦目の獲得枚数で見る', gpP(['解放したときは、RUSHに入ったときの信号の獲得枚数が100枚以下になることが多いです。']) +
+      gpUl(['7pt以内：ほぼ解放しないので、目で見ていなければ解放していないとみてよい', '8pt：1戦目が60枚未満なら解放した見込みが高い。60枚以上なら解放ではないとみてよい（そのあとの10ptの狙いにも大きなちがいは出ない）', '9〜12pt：1戦目が100枚以下なら解放とみなす']) +
+      gpP(['解放したら、0ptから数え直します。'])) +
+    '<div class="gh">狙い撃ち</div>' +
+    gpCard('ptがふえる演出が出なかったとき', gpP(['CZ失敗とAT駆け抜けのときは、かならずptがふえる演出が出ます。', '8〜12ptでその演出が出なかったら、次のATで解放確定とみて、不問で狙えます。'])) +
+    '<div class="gh">練習問題</div>' +
+    GQ.map(function (x, i) {
+      return '<div class="term"><div class="gq-n">問題' + (i + 1) + '</div><div class="gq-s">' + x.s.map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('<em>→</em>') + '</div>' +
+        '<p class="gq-q">' + esc(x.q) + '</p><button class="gq-btn" data-ga="' + i + '">答えを見る</button>' +
+        '<div class="gq-a hide" id="gqa' + i + '"><b>' + wj(x.a) + '</b><p>' + wj(x.w) + '</p></div></div>';
+    }).join('');
+  gpDraw();
+}
+$('ghoulV').addEventListener('click', function (e) {
+  var b = e.target.closest('[data-gp]'), q = e.target.closest('[data-ga]');
+  if (b) {
+    var ev = gpLoad(), k = b.dataset.gp;
+    if (k === 'undo') ev.pop(); else ev.push(k);
+    if (ev.length > 300) ev = ev.slice(-300);
+    ls('gp', JSON.stringify(ev)); gpDraw();
+  }
+  if (q) {
+    var a = $('gqa' + q.dataset.ga), open = a.classList.contains('hide');
+    a.classList.toggle('hide', !open); q.textContent = open ? '答えを閉じる' : '答えを見る';
+  }
+});
 
 /* ---------- 書く・直す・消す（書く合言葉の人だけ） ---------- */
 var C = { id: '', imgs: [] };
